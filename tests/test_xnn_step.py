@@ -61,6 +61,49 @@ def test_available_models_missing_directory_is_empty(tmp_path):
     assert XnnStep.available_models(config) == {}
 
 
+def test_personal_and_local_sources(tmp_path, monkeypatch):
+    """personal:/local: entries map to the SEAMM data directories, personal shadows
+    local, and the reported source uses the Forcefield-step convention."""
+    personal = tmp_path / "personal" / "xnn"
+    local = tmp_path / "local" / "xnn"
+    personal.mkdir(parents=True)
+    local.mkdir(parents=True)
+    (personal / "mine.pt").write_bytes(b"x")
+    (personal / "shared.pt").write_bytes(b"p")
+    (local / "shared.pt").write_bytes(b"l")
+    (local / "site.pt").write_bytes(b"x")
+    monkeypatch.setattr(
+        XnnStep,
+        "_SOURCE_ROOTS",
+        {"personal": tmp_path / "personal", "local": tmp_path / "local"},
+    )
+    config = {"models": "personal:xnn\n    local:xnn\n", "pattern": "*.pt"}
+    models, sources = XnnStep.available_models(config, with_sources=True)
+    assert sorted(models) == ["mine", "shared", "site"]
+    assert models["shared"] == personal / "shared.pt"  # personal wins
+    assert sources == {
+        "mine": "personal:xnn/mine.pt",
+        "shared": "personal:xnn/shared.pt",
+        "site": "local:xnn/site.pt",
+    }
+    options = XnnStep.get_model_chemistry_options.__func__  # noqa: F841
+    monkeypatch.setattr(XnnStep, "_local_config", classmethod(lambda cls: config))
+    assert (
+        XnnStep.get_model_chemistry_options()["mine"]["source"]
+        == "personal:xnn/mine.pt"
+    )
+
+
+def test_model_directories_default_ini_lists_personal_then_local():
+    import configparser
+
+    cfg = configparser.ConfigParser(interpolation=None)
+    cfg.read_string(XnnStep._default_ini_text())
+    dirs = XnnStep.model_directories(dict(cfg.items("local")))
+    assert [prefix for prefix, _ in dirs] == ["personal:xnn/", "local:xnn/"]
+    assert dirs[0][1] == (XnnStep._SOURCE_ROOTS["personal"] / "xnn").expanduser()
+
+
 def test_available_models_root_substitution(tmp_path, models_dir, monkeypatch):
     monkeypatch.setattr(XnnStep, "seamm_root", staticmethod(lambda: tmp_path))
     config = {"models": "{root}/models", "pattern": "*.pt"}
@@ -160,7 +203,7 @@ def test_default_ini_bootstraps(tmp_path, monkeypatch):
     assert (tmp_path / "xnn.ini").exists()
     assert config["conda"] == "/opt/conda/bin/conda"
     assert config["conda-environment"] == "seamm-xnn"
-    assert "{root}/data/Forcefields/xnn" in config["models"]
+    assert "personal:xnn" in config["models"] and "local:xnn" in config["models"]
 
 
 def test_thread_count_from_seamm_ini(tmp_path, monkeypatch):

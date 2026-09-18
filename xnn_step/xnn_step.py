@@ -97,11 +97,13 @@ class XnnStep(object):
             ``mdi_method_arg`` (the model name) and ``path`` (the checkpoint).
         """
         options = {}
-        for name, path in cls.available_models().items():
+        models, sources = cls.available_models(with_sources=True)
+        for name, path in models.items():
             options[name] = {
                 "model_chemistry": f"xnn:MLFF@{name}",
                 "type": "MLFF",
-                "description": f"xnn machine-learned force field {path.name}",
+                "description": f"xnn machine-learned force field {sources[name]}",
+                "source": sources[name],
                 "periodic_native": True,
                 "periodic_mdi": True,
                 "elements": "",
@@ -111,8 +113,46 @@ class XnnStep(object):
             }
         return options
 
+    # Where SEAMM keeps user data, mirroring the Forcefield step: ``personal:``
+    # is the user's own data, ``local:`` the machine-wide SEAMM data directory.
+    _SOURCE_ROOTS = {
+        "personal": Path("~/.seamm.d/data/Forcefields"),
+        "local": Path("~/SEAMM/data/Forcefields"),
+    }
+
     @classmethod
-    def available_models(cls, config=None):
+    def model_directories(cls, config):
+        """The directories to search for checkpoints, from ``models`` in xnn.ini.
+
+        Each line is a directory: an absolute or ``~`` path, ``{root}/...`` for
+        the SEAMM root, or ``personal:<subdir>`` / ``local:<subdir>`` for
+        ``~/.seamm.d/data/Forcefields/<subdir>`` / ``~/SEAMM/data/Forcefields/<subdir>``
+        (the same convention as the Forcefield step's ``personal:``/``local:``
+        forcefield files). Returns ``[(label_prefix, Path)]`` in order; the
+        label prefix (e.g. ``personal:xnn/``) is what a model's file is reported
+        as.
+        """
+        root = cls.seamm_root()
+        result = []
+        for line in config.get("models", "").splitlines():
+            entry = line.strip()
+            if entry == "" or entry.startswith("#"):
+                continue
+            prefix = ""
+            for source, base in cls._SOURCE_ROOTS.items():
+                tag = f"{source}:"
+                if entry.startswith(tag):
+                    sub = entry[len(tag) :].strip("/")
+                    directory = base.expanduser() / sub if sub else base.expanduser()
+                    prefix = f"{source}:{sub}/" if sub else f"{source}:"
+                    break
+            else:
+                directory = Path(entry.replace("{root}", str(root))).expanduser()
+            result.append((prefix, directory))
+        return result
+
+    @classmethod
+    def available_models(cls, config=None, with_sources=False):
         """The xnn checkpoints found in the configured model directories.
 
         Parameters
@@ -121,25 +161,24 @@ class XnnStep(object):
             An ``xnn.ini`` section (see :meth:`get_executor_config`). Defaults to
             the ``[local]`` section of the user's ``xnn.ini``, or the plug-in's
             default ini if the user has none.
+        with_sources : bool
+            Also return, per model, the human-readable source such as
+            ``personal:xnn/water.pt`` (or the absolute path for a plain directory).
 
         Returns
         -------
-        dict[str, Path]
-            Model name -> checkpoint path, sorted by name. Two files with the same
-            stem in different directories keep the first found (a warning is
-            logged for the other).
+        dict[str, Path]  (or (dict[str, Path], dict[str, str]) with sources)
+            Model name -> checkpoint path, sorted by name. The directories are
+            searched in the order listed, so a personal model shadows a local one
+            of the same name; the shadowed file is logged and ignored.
         """
         if config is None:
             config = cls._local_config()
 
-        root = cls.seamm_root()
         pattern = config.get("pattern", "*.pt").strip() or "*.pt"
         models = {}
-        for line in config.get("models", "").splitlines():
-            directory = line.strip()
-            if directory == "" or directory.startswith("#"):
-                continue
-            directory = Path(directory.replace("{root}", str(root))).expanduser()
+        sources = {}
+        for prefix, directory in cls.model_directories(config):
             if not directory.is_dir():
                 logger.debug(f"xnn model directory {directory} does not exist")
                 continue
@@ -147,14 +186,19 @@ class XnnStep(object):
                 if not path.is_file():
                     continue
                 name = cls.model_name(path)
+                source = f"{prefix}{path.name}" if prefix else str(path)
                 if name in models:
-                    logger.warning(
-                        f"xnn model '{name}' found twice; keeping {models[name]} and "
-                        f"ignoring {path}."
+                    logger.info(
+                        f"xnn model '{name}' from {source} is shadowed by "
+                        f"{sources[name]}."
                     )
                     continue
                 models[name] = path
-        return dict(sorted(models.items()))
+                sources[name] = source
+        models = dict(sorted(models.items()))
+        if with_sources:
+            return models, {k: sources[k] for k in models}
+        return models
 
     @staticmethod
     def model_name(path):

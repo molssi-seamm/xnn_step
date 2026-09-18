@@ -8,7 +8,7 @@
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="viewport" content="width=device-width, initial-scale=1" />
 
-    <title>xnn_step package &#8212; SEAMM xnn Plug-in 2026.9.18 documentation</title>
+    <title>xnn_step package &#8212; SEAMM xnn Plug-in 2026.9.19 documentation</title>
   
   
   
@@ -41,7 +41,7 @@
   <link rel="preload" as="script" href="../_static/scripts/bootstrap.js?digest=cb8930eaaf36d9849b67" />
 <link rel="preload" as="script" href="../_static/scripts/pydata-sphinx-theme.js?digest=cb8930eaaf36d9849b67" />
 
-    <script src="../_static/documentation_options.js?v=4c890157"></script>
+    <script src="../_static/documentation_options.js?v=e8f1854e"></script>
     <script src="../_static/doctools.js?v=fd6eb6e6"></script>
     <script src="../_static/sphinx_highlight.js?v=6ffebe34"></script>
     <script src="../_static/clipboard.min.js?v=a7894cd8"></script>
@@ -55,7 +55,7 @@
     <link rel="prev" title="xnn_step" href="modules.html" />
   <meta name="viewport" content="width=device-width, initial-scale=1"/>
   <meta name="docsearch:language" content="en"/>
-  <meta name="docsearch:version" content="2026.9.18" />
+  <meta name="docsearch:version" content="2026.9.19" />
   
     
     <script src="../_static/searchtools.js"></script>
@@ -917,21 +917,25 @@ not exist it will be created. Common groups are “Building”,
 </div></blockquote>
 <dl class="py method">
 <dt class="sig sig-object py" id="xnn_step.xnn_step.XnnStep.available_models">
-<span class="property"><span class="k"><span class="pre">classmethod</span></span><span class="w"> </span></span><span class="sig-name descname"><span class="pre">available_models</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">config</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/xnn_step/xnn_step.html#XnnStep.available_models"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#xnn_step.xnn_step.XnnStep.available_models" title="Link to this definition">#</a></dt>
+<span class="property"><span class="k"><span class="pre">classmethod</span></span><span class="w"> </span></span><span class="sig-name descname"><span class="pre">available_models</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">config</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">with_sources</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/xnn_step/xnn_step.html#XnnStep.available_models"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#xnn_step.xnn_step.XnnStep.available_models" title="Link to this definition">#</a></dt>
 <dd><p>The xnn checkpoints found in the configured model directories.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters<span class="colon">:</span></dt>
-<dd class="field-odd"><p><strong>config</strong> (<em>dict</em><em>, </em><em>optional</em>) – An <code class="docutils literal notranslate"><span class="pre">xnn.ini</span></code> section (see <a class="reference internal" href="#xnn_step.xnn_step.XnnStep.get_executor_config" title="xnn_step.xnn_step.XnnStep.get_executor_config"><code class="xref py py-meth docutils literal notranslate"><span class="pre">get_executor_config()</span></code></a>). Defaults to
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>config</strong> (<em>dict</em><em>, </em><em>optional</em>) – An <code class="docutils literal notranslate"><span class="pre">xnn.ini</span></code> section (see <a class="reference internal" href="#xnn_step.xnn_step.XnnStep.get_executor_config" title="xnn_step.xnn_step.XnnStep.get_executor_config"><code class="xref py py-meth docutils literal notranslate"><span class="pre">get_executor_config()</span></code></a>). Defaults to
 the <code class="docutils literal notranslate"><span class="pre">[local]</span></code> section of the user’s <code class="docutils literal notranslate"><span class="pre">xnn.ini</span></code>, or the plug-in’s
-default ini if the user has none.</p>
+default ini if the user has none.</p></li>
+<li><p><strong>with_sources</strong> (<em>bool</em>) – Also return, per model, the human-readable source such as
+<code class="docutils literal notranslate"><span class="pre">personal:xnn/water.pt</span></code> (or the absolute path for a plain directory).</p></li>
+</ul>
 </dd>
 <dt class="field-even">Returns<span class="colon">:</span></dt>
-<dd class="field-even"><p>Model name -&gt; checkpoint path, sorted by name. Two files with the same
-stem in different directories keep the first found (a warning is
-logged for the other).</p>
+<dd class="field-even"><p>Model name -&gt; checkpoint path, sorted by name. The directories are
+searched in the order listed, so a personal model shadows a local one
+of the same name; the shadowed file is logged and ignored.</p>
 </dd>
 <dt class="field-odd">Return type<span class="colon">:</span></dt>
-<dd class="field-odd"><p>dict[str, Path]</p>
+<dd class="field-odd"><p>dict[str, Path]  (or (dict[str, Path], dict[str, str]) with sources)</p>
 </dd>
 </dl>
 </dd></dl>
@@ -1067,6 +1071,19 @@ characters replaced by <code class="docutils literal notranslate"><span class="p
 <dd class="field-odd"><p>dict</p>
 </dd>
 </dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="xnn_step.xnn_step.XnnStep.model_directories">
+<span class="property"><span class="k"><span class="pre">classmethod</span></span><span class="w"> </span></span><span class="sig-name descname"><span class="pre">model_directories</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">config</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/xnn_step/xnn_step.html#XnnStep.model_directories"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#xnn_step.xnn_step.XnnStep.model_directories" title="Link to this definition">#</a></dt>
+<dd><p>The directories to search for checkpoints, from <code class="docutils literal notranslate"><span class="pre">models</span></code> in xnn.ini.</p>
+<p>Each line is a directory: an absolute or <code class="docutils literal notranslate"><span class="pre">~</span></code> path, <code class="docutils literal notranslate"><span class="pre">{root}/...</span></code> for
+the SEAMM root, or <code class="docutils literal notranslate"><span class="pre">personal:&lt;subdir&gt;</span></code> / <code class="docutils literal notranslate"><span class="pre">local:&lt;subdir&gt;</span></code> for
+<code class="docutils literal notranslate"><span class="pre">~/.seamm.d/data/Forcefields/&lt;subdir&gt;</span></code> / <code class="docutils literal notranslate"><span class="pre">~/SEAMM/data/Forcefields/&lt;subdir&gt;</span></code>
+(the same convention as the Forcefield step’s <code class="docutils literal notranslate"><span class="pre">personal:</span></code>/<code class="docutils literal notranslate"><span class="pre">local:</span></code>
+forcefield files). Returns <code class="docutils literal notranslate"><span class="pre">[(label_prefix,</span> <span class="pre">Path)]</span></code> in order; the
+label prefix (e.g. <code class="docutils literal notranslate"><span class="pre">personal:xnn/</span></code>) is what a model’s file is reported
+as.</p>
 </dd></dl>
 
 <dl class="py method">
@@ -1219,6 +1236,7 @@ A SEAMM plug-in for xnn</p>
 <li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#xnn_step.xnn_step.XnnStep.get_executor_config"><code class="docutils literal notranslate"><span class="pre">XnnStep.get_executor_config()</span></code></a></li>
 <li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#xnn_step.xnn_step.XnnStep.get_mdi_engine_command"><code class="docutils literal notranslate"><span class="pre">XnnStep.get_mdi_engine_command()</span></code></a></li>
 <li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#xnn_step.xnn_step.XnnStep.get_model_chemistry_options"><code class="docutils literal notranslate"><span class="pre">XnnStep.get_model_chemistry_options()</span></code></a></li>
+<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#xnn_step.xnn_step.XnnStep.model_directories"><code class="docutils literal notranslate"><span class="pre">XnnStep.model_directories()</span></code></a></li>
 <li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#xnn_step.xnn_step.XnnStep.model_name"><code class="docutils literal notranslate"><span class="pre">XnnStep.model_name()</span></code></a></li>
 <li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#xnn_step.xnn_step.XnnStep.my_description"><code class="docutils literal notranslate"><span class="pre">XnnStep.my_description</span></code></a></li>
 <li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#xnn_step.xnn_step.XnnStep.seamm_ini_path"><code class="docutils literal notranslate"><span class="pre">XnnStep.seamm_ini_path()</span></code></a></li>

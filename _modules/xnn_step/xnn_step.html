@@ -7,7 +7,7 @@
   <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>xnn_step.xnn_step &#8212; SEAMM xnn Plug-in 2026.9.18 documentation</title>
+    <title>xnn_step.xnn_step &#8212; SEAMM xnn Plug-in 2026.9.19 documentation</title>
   
   
   
@@ -40,7 +40,7 @@
   <link rel="preload" as="script" href="../../_static/scripts/bootstrap.js?digest=cb8930eaaf36d9849b67" />
 <link rel="preload" as="script" href="../../_static/scripts/pydata-sphinx-theme.js?digest=cb8930eaaf36d9849b67" />
 
-    <script src="../../_static/documentation_options.js?v=4c890157"></script>
+    <script src="../../_static/documentation_options.js?v=e8f1854e"></script>
     <script src="../../_static/doctools.js?v=fd6eb6e6"></script>
     <script src="../../_static/sphinx_highlight.js?v=6ffebe34"></script>
     <script src="../../_static/clipboard.min.js?v=a7894cd8"></script>
@@ -52,7 +52,7 @@
     <link rel="search" title="Search" href="../../search.html" />
   <meta name="viewport" content="width=device-width, initial-scale=1"/>
   <meta name="docsearch:language" content="en"/>
-  <meta name="docsearch:version" content="2026.9.18" />
+  <meta name="docsearch:version" content="2026.9.19" />
   
     
     <script src="../../_static/searchtools.js"></script>
@@ -594,11 +594,13 @@
 <span class="sd">            ``mdi_method_arg`` (the model name) and ``path`` (the checkpoint).</span>
 <span class="sd">        """</span>
         <span class="n">options</span> <span class="o">=</span> <span class="p">{}</span>
-        <span class="k">for</span> <span class="n">name</span><span class="p">,</span> <span class="n">path</span> <span class="ow">in</span> <span class="bp">cls</span><span class="o">.</span><span class="n">available_models</span><span class="p">()</span><span class="o">.</span><span class="n">items</span><span class="p">():</span>
+        <span class="n">models</span><span class="p">,</span> <span class="n">sources</span> <span class="o">=</span> <span class="bp">cls</span><span class="o">.</span><span class="n">available_models</span><span class="p">(</span><span class="n">with_sources</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+        <span class="k">for</span> <span class="n">name</span><span class="p">,</span> <span class="n">path</span> <span class="ow">in</span> <span class="n">models</span><span class="o">.</span><span class="n">items</span><span class="p">():</span>
             <span class="n">options</span><span class="p">[</span><span class="n">name</span><span class="p">]</span> <span class="o">=</span> <span class="p">{</span>
                 <span class="s2">"model_chemistry"</span><span class="p">:</span> <span class="sa">f</span><span class="s2">"xnn:MLFF@</span><span class="si">{</span><span class="n">name</span><span class="si">}</span><span class="s2">"</span><span class="p">,</span>
                 <span class="s2">"type"</span><span class="p">:</span> <span class="s2">"MLFF"</span><span class="p">,</span>
-                <span class="s2">"description"</span><span class="p">:</span> <span class="sa">f</span><span class="s2">"xnn machine-learned force field </span><span class="si">{</span><span class="n">path</span><span class="o">.</span><span class="n">name</span><span class="si">}</span><span class="s2">"</span><span class="p">,</span>
+                <span class="s2">"description"</span><span class="p">:</span> <span class="sa">f</span><span class="s2">"xnn machine-learned force field </span><span class="si">{</span><span class="n">sources</span><span class="p">[</span><span class="n">name</span><span class="p">]</span><span class="si">}</span><span class="s2">"</span><span class="p">,</span>
+                <span class="s2">"source"</span><span class="p">:</span> <span class="n">sources</span><span class="p">[</span><span class="n">name</span><span class="p">],</span>
                 <span class="s2">"periodic_native"</span><span class="p">:</span> <span class="kc">True</span><span class="p">,</span>
                 <span class="s2">"periodic_mdi"</span><span class="p">:</span> <span class="kc">True</span><span class="p">,</span>
                 <span class="s2">"elements"</span><span class="p">:</span> <span class="s2">""</span><span class="p">,</span>
@@ -609,10 +611,51 @@
         <span class="k">return</span> <span class="n">options</span></div>
 
 
+    <span class="c1"># Where SEAMM keeps user data, mirroring the Forcefield step: ``personal:``</span>
+    <span class="c1"># is the user's own data, ``local:`` the machine-wide SEAMM data directory.</span>
+    <span class="n">_SOURCE_ROOTS</span> <span class="o">=</span> <span class="p">{</span>
+        <span class="s2">"personal"</span><span class="p">:</span> <span class="n">Path</span><span class="p">(</span><span class="s2">"~/.seamm.d/data/Forcefields"</span><span class="p">),</span>
+        <span class="s2">"local"</span><span class="p">:</span> <span class="n">Path</span><span class="p">(</span><span class="s2">"~/SEAMM/data/Forcefields"</span><span class="p">),</span>
+    <span class="p">}</span>
+
+<div class="viewcode-block" id="XnnStep.model_directories">
+<a class="viewcode-back" href="../../api/xnn_step.html#xnn_step.xnn_step.XnnStep.model_directories">[docs]</a>
+    <span class="nd">@classmethod</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">model_directories</span><span class="p">(</span><span class="bp">cls</span><span class="p">,</span> <span class="n">config</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">"""The directories to search for checkpoints, from ``models`` in xnn.ini.</span>
+
+<span class="sd">        Each line is a directory: an absolute or ``~`` path, ``{root}/...`` for</span>
+<span class="sd">        the SEAMM root, or ``personal:&lt;subdir&gt;`` / ``local:&lt;subdir&gt;`` for</span>
+<span class="sd">        ``~/.seamm.d/data/Forcefields/&lt;subdir&gt;`` / ``~/SEAMM/data/Forcefields/&lt;subdir&gt;``</span>
+<span class="sd">        (the same convention as the Forcefield step's ``personal:``/``local:``</span>
+<span class="sd">        forcefield files). Returns ``[(label_prefix, Path)]`` in order; the</span>
+<span class="sd">        label prefix (e.g. ``personal:xnn/``) is what a model's file is reported</span>
+<span class="sd">        as.</span>
+<span class="sd">        """</span>
+        <span class="n">root</span> <span class="o">=</span> <span class="bp">cls</span><span class="o">.</span><span class="n">seamm_root</span><span class="p">()</span>
+        <span class="n">result</span> <span class="o">=</span> <span class="p">[]</span>
+        <span class="k">for</span> <span class="n">line</span> <span class="ow">in</span> <span class="n">config</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">"models"</span><span class="p">,</span> <span class="s2">""</span><span class="p">)</span><span class="o">.</span><span class="n">splitlines</span><span class="p">():</span>
+            <span class="n">entry</span> <span class="o">=</span> <span class="n">line</span><span class="o">.</span><span class="n">strip</span><span class="p">()</span>
+            <span class="k">if</span> <span class="n">entry</span> <span class="o">==</span> <span class="s2">""</span> <span class="ow">or</span> <span class="n">entry</span><span class="o">.</span><span class="n">startswith</span><span class="p">(</span><span class="s2">"#"</span><span class="p">):</span>
+                <span class="k">continue</span>
+            <span class="n">prefix</span> <span class="o">=</span> <span class="s2">""</span>
+            <span class="k">for</span> <span class="n">source</span><span class="p">,</span> <span class="n">base</span> <span class="ow">in</span> <span class="bp">cls</span><span class="o">.</span><span class="n">_SOURCE_ROOTS</span><span class="o">.</span><span class="n">items</span><span class="p">():</span>
+                <span class="n">tag</span> <span class="o">=</span> <span class="sa">f</span><span class="s2">"</span><span class="si">{</span><span class="n">source</span><span class="si">}</span><span class="s2">:"</span>
+                <span class="k">if</span> <span class="n">entry</span><span class="o">.</span><span class="n">startswith</span><span class="p">(</span><span class="n">tag</span><span class="p">):</span>
+                    <span class="n">sub</span> <span class="o">=</span> <span class="n">entry</span><span class="p">[</span><span class="nb">len</span><span class="p">(</span><span class="n">tag</span><span class="p">)</span> <span class="p">:]</span><span class="o">.</span><span class="n">strip</span><span class="p">(</span><span class="s2">"/"</span><span class="p">)</span>
+                    <span class="n">directory</span> <span class="o">=</span> <span class="n">base</span><span class="o">.</span><span class="n">expanduser</span><span class="p">()</span> <span class="o">/</span> <span class="n">sub</span> <span class="k">if</span> <span class="n">sub</span> <span class="k">else</span> <span class="n">base</span><span class="o">.</span><span class="n">expanduser</span><span class="p">()</span>
+                    <span class="n">prefix</span> <span class="o">=</span> <span class="sa">f</span><span class="s2">"</span><span class="si">{</span><span class="n">source</span><span class="si">}</span><span class="s2">:</span><span class="si">{</span><span class="n">sub</span><span class="si">}</span><span class="s2">/"</span> <span class="k">if</span> <span class="n">sub</span> <span class="k">else</span> <span class="sa">f</span><span class="s2">"</span><span class="si">{</span><span class="n">source</span><span class="si">}</span><span class="s2">:"</span>
+                    <span class="k">break</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="n">directory</span> <span class="o">=</span> <span class="n">Path</span><span class="p">(</span><span class="n">entry</span><span class="o">.</span><span class="n">replace</span><span class="p">(</span><span class="s2">"</span><span class="si">{root}</span><span class="s2">"</span><span class="p">,</span> <span class="nb">str</span><span class="p">(</span><span class="n">root</span><span class="p">)))</span><span class="o">.</span><span class="n">expanduser</span><span class="p">()</span>
+            <span class="n">result</span><span class="o">.</span><span class="n">append</span><span class="p">((</span><span class="n">prefix</span><span class="p">,</span> <span class="n">directory</span><span class="p">))</span>
+        <span class="k">return</span> <span class="n">result</span></div>
+
+
 <div class="viewcode-block" id="XnnStep.available_models">
 <a class="viewcode-back" href="../../api/xnn_step.html#xnn_step.xnn_step.XnnStep.available_models">[docs]</a>
     <span class="nd">@classmethod</span>
-    <span class="k">def</span><span class="w"> </span><span class="nf">available_models</span><span class="p">(</span><span class="bp">cls</span><span class="p">,</span> <span class="n">config</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">available_models</span><span class="p">(</span><span class="bp">cls</span><span class="p">,</span> <span class="n">config</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">with_sources</span><span class="o">=</span><span class="kc">False</span><span class="p">):</span>
 <span class="w">        </span><span class="sd">"""The xnn checkpoints found in the configured model directories.</span>
 
 <span class="sd">        Parameters</span>
@@ -621,25 +664,24 @@
 <span class="sd">            An ``xnn.ini`` section (see :meth:`get_executor_config`). Defaults to</span>
 <span class="sd">            the ``[local]`` section of the user's ``xnn.ini``, or the plug-in's</span>
 <span class="sd">            default ini if the user has none.</span>
+<span class="sd">        with_sources : bool</span>
+<span class="sd">            Also return, per model, the human-readable source such as</span>
+<span class="sd">            ``personal:xnn/water.pt`` (or the absolute path for a plain directory).</span>
 
 <span class="sd">        Returns</span>
 <span class="sd">        -------</span>
-<span class="sd">        dict[str, Path]</span>
-<span class="sd">            Model name -&gt; checkpoint path, sorted by name. Two files with the same</span>
-<span class="sd">            stem in different directories keep the first found (a warning is</span>
-<span class="sd">            logged for the other).</span>
+<span class="sd">        dict[str, Path]  (or (dict[str, Path], dict[str, str]) with sources)</span>
+<span class="sd">            Model name -&gt; checkpoint path, sorted by name. The directories are</span>
+<span class="sd">            searched in the order listed, so a personal model shadows a local one</span>
+<span class="sd">            of the same name; the shadowed file is logged and ignored.</span>
 <span class="sd">        """</span>
         <span class="k">if</span> <span class="n">config</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
             <span class="n">config</span> <span class="o">=</span> <span class="bp">cls</span><span class="o">.</span><span class="n">_local_config</span><span class="p">()</span>
 
-        <span class="n">root</span> <span class="o">=</span> <span class="bp">cls</span><span class="o">.</span><span class="n">seamm_root</span><span class="p">()</span>
         <span class="n">pattern</span> <span class="o">=</span> <span class="n">config</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">"pattern"</span><span class="p">,</span> <span class="s2">"*.pt"</span><span class="p">)</span><span class="o">.</span><span class="n">strip</span><span class="p">()</span> <span class="ow">or</span> <span class="s2">"*.pt"</span>
         <span class="n">models</span> <span class="o">=</span> <span class="p">{}</span>
-        <span class="k">for</span> <span class="n">line</span> <span class="ow">in</span> <span class="n">config</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">"models"</span><span class="p">,</span> <span class="s2">""</span><span class="p">)</span><span class="o">.</span><span class="n">splitlines</span><span class="p">():</span>
-            <span class="n">directory</span> <span class="o">=</span> <span class="n">line</span><span class="o">.</span><span class="n">strip</span><span class="p">()</span>
-            <span class="k">if</span> <span class="n">directory</span> <span class="o">==</span> <span class="s2">""</span> <span class="ow">or</span> <span class="n">directory</span><span class="o">.</span><span class="n">startswith</span><span class="p">(</span><span class="s2">"#"</span><span class="p">):</span>
-                <span class="k">continue</span>
-            <span class="n">directory</span> <span class="o">=</span> <span class="n">Path</span><span class="p">(</span><span class="n">directory</span><span class="o">.</span><span class="n">replace</span><span class="p">(</span><span class="s2">"</span><span class="si">{root}</span><span class="s2">"</span><span class="p">,</span> <span class="nb">str</span><span class="p">(</span><span class="n">root</span><span class="p">)))</span><span class="o">.</span><span class="n">expanduser</span><span class="p">()</span>
+        <span class="n">sources</span> <span class="o">=</span> <span class="p">{}</span>
+        <span class="k">for</span> <span class="n">prefix</span><span class="p">,</span> <span class="n">directory</span> <span class="ow">in</span> <span class="bp">cls</span><span class="o">.</span><span class="n">model_directories</span><span class="p">(</span><span class="n">config</span><span class="p">):</span>
             <span class="k">if</span> <span class="ow">not</span> <span class="n">directory</span><span class="o">.</span><span class="n">is_dir</span><span class="p">():</span>
                 <span class="n">logger</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="sa">f</span><span class="s2">"xnn model directory </span><span class="si">{</span><span class="n">directory</span><span class="si">}</span><span class="s2"> does not exist"</span><span class="p">)</span>
                 <span class="k">continue</span>
@@ -647,14 +689,19 @@
                 <span class="k">if</span> <span class="ow">not</span> <span class="n">path</span><span class="o">.</span><span class="n">is_file</span><span class="p">():</span>
                     <span class="k">continue</span>
                 <span class="n">name</span> <span class="o">=</span> <span class="bp">cls</span><span class="o">.</span><span class="n">model_name</span><span class="p">(</span><span class="n">path</span><span class="p">)</span>
+                <span class="n">source</span> <span class="o">=</span> <span class="sa">f</span><span class="s2">"</span><span class="si">{</span><span class="n">prefix</span><span class="si">}{</span><span class="n">path</span><span class="o">.</span><span class="n">name</span><span class="si">}</span><span class="s2">"</span> <span class="k">if</span> <span class="n">prefix</span> <span class="k">else</span> <span class="nb">str</span><span class="p">(</span><span class="n">path</span><span class="p">)</span>
                 <span class="k">if</span> <span class="n">name</span> <span class="ow">in</span> <span class="n">models</span><span class="p">:</span>
-                    <span class="n">logger</span><span class="o">.</span><span class="n">warning</span><span class="p">(</span>
-                        <span class="sa">f</span><span class="s2">"xnn model '</span><span class="si">{</span><span class="n">name</span><span class="si">}</span><span class="s2">' found twice; keeping </span><span class="si">{</span><span class="n">models</span><span class="p">[</span><span class="n">name</span><span class="p">]</span><span class="si">}</span><span class="s2"> and "</span>
-                        <span class="sa">f</span><span class="s2">"ignoring </span><span class="si">{</span><span class="n">path</span><span class="si">}</span><span class="s2">."</span>
+                    <span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span>
+                        <span class="sa">f</span><span class="s2">"xnn model '</span><span class="si">{</span><span class="n">name</span><span class="si">}</span><span class="s2">' from </span><span class="si">{</span><span class="n">source</span><span class="si">}</span><span class="s2"> is shadowed by "</span>
+                        <span class="sa">f</span><span class="s2">"</span><span class="si">{</span><span class="n">sources</span><span class="p">[</span><span class="n">name</span><span class="p">]</span><span class="si">}</span><span class="s2">."</span>
                     <span class="p">)</span>
                     <span class="k">continue</span>
                 <span class="n">models</span><span class="p">[</span><span class="n">name</span><span class="p">]</span> <span class="o">=</span> <span class="n">path</span>
-        <span class="k">return</span> <span class="nb">dict</span><span class="p">(</span><span class="nb">sorted</span><span class="p">(</span><span class="n">models</span><span class="o">.</span><span class="n">items</span><span class="p">()))</span></div>
+                <span class="n">sources</span><span class="p">[</span><span class="n">name</span><span class="p">]</span> <span class="o">=</span> <span class="n">source</span>
+        <span class="n">models</span> <span class="o">=</span> <span class="nb">dict</span><span class="p">(</span><span class="nb">sorted</span><span class="p">(</span><span class="n">models</span><span class="o">.</span><span class="n">items</span><span class="p">()))</span>
+        <span class="k">if</span> <span class="n">with_sources</span><span class="p">:</span>
+            <span class="k">return</span> <span class="n">models</span><span class="p">,</span> <span class="p">{</span><span class="n">k</span><span class="p">:</span> <span class="n">sources</span><span class="p">[</span><span class="n">k</span><span class="p">]</span> <span class="k">for</span> <span class="n">k</span> <span class="ow">in</span> <span class="n">models</span><span class="p">}</span>
+        <span class="k">return</span> <span class="n">models</span></div>
 
 
 <div class="viewcode-block" id="XnnStep.model_name">

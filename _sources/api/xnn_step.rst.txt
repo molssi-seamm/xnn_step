@@ -1,0 +1,61 @@
+xnn\_step package
+=================
+
+Submodules
+----------
+
+xnn\_step.installer module
+--------------------------
+
+.. automodule:: xnn_step.installer
+   :members:
+   :show-inheritance:
+   :undoc-members:
+
+xnn\_step.metadata module
+-------------------------
+
+.. automodule:: xnn_step.metadata
+   :members:
+   :show-inheritance:
+   :undoc-members:
+
+xnn\_step.tk\_xnn module
+------------------------
+
+.. automodule:: xnn_step.tk_xnn
+   :members:
+   :show-inheritance:
+   :undoc-members:
+
+xnn\_step.xnn module
+--------------------
+
+.. automodule:: xnn_step.xnn
+   :members:
+   :show-inheritance:
+   :undoc-members:
+
+xnn\_step.xnn\_parameters module
+--------------------------------
+
+.. automodule:: xnn_step.xnn_parameters
+   :members:
+   :show-inheritance:
+   :undoc-members:
+
+xnn\_step.xnn\_step module
+--------------------------
+
+.. automodule:: xnn_step.xnn_step
+   :members:
+   :show-inheritance:
+   :undoc-members:
+
+Module contents
+---------------
+
+.. automodule:: xnn_step
+   :members:
+   :show-inheritance:
+   :undoc-members:

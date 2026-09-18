@@ -48,6 +48,9 @@ Features
 
 .. _xnn: https://github.com/molssi-ai/xnn
 
+Note: xnn is published on PyPI under the name ``xnns``; the import name and the ``xnn``
+command are unchanged.
+
 Acknowledgements
 ----------------
 

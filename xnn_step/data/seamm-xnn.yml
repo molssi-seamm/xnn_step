@@ -12,4 +12,7 @@ dependencies:
     - pymdi          # provides `import mdi` for the MDI engine
     - e3nn==0.4.4    # for the equivariant models (MACE, NequIP, Allegro)
     - vesin-torch    # fast cell-list neighbor lists
-    - xnn @ git+https://github.com/molssi-ai/xnn@main
+    # The xnn code is published on PyPI under the name `xnns` (the name `xnn` is
+    # an orphaned project awaiting transfer); the import name and the `xnn`
+    # command are unchanged.
+    - xnns

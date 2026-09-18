@@ -10,7 +10,8 @@ conda environment::
 
   seamm-installer install --update xnn-step
 
-The plug-in needs the `xnn`_ code itself, with PyTorch, in its own conda environment
+The plug-in needs the `xnn`_ code itself (published on PyPI as ``xnns``), with PyTorch, in
+its own conda environment
 (``seamm-xnn`` by default). ``xnn-step-installer`` creates it from the bundled
 ``seamm-xnn.yml`` and records it in ``~/SEAMM/xnn.ini``::
 

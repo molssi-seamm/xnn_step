@@ -1,0 +1,7 @@
+[xnn-step]
+# How many CPU threads the xnn MDI engine may use when it runs on the CPU
+# (OMP_NUM_THREADS / MKL_NUM_THREADS). 'available' leaves PyTorch's default,
+# which is all the cores of the machine; a number caps it. This does not affect
+# a GPU device.
+
+ncores = available

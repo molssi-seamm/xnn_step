@@ -1,0 +1,15 @@
+name: seamm-xnn
+channels:
+  - conda-forge
+dependencies:
+  - python=3.12
+  - pip
+  # PyTorch from conda-forge is the CPU build on macOS and a CUDA build on
+  # Linux where available; for a specific CUDA version install torch by hand
+  # into this environment following https://pytorch.org.
+  - pytorch
+  - pip:
+    - pymdi          # provides `import mdi` for the MDI engine
+    - e3nn==0.4.4    # for the equivariant models (MACE, NequIP, Allegro)
+    - vesin-torch    # fast cell-list neighbor lists
+    - xnn @ git+https://github.com/molssi-ai/xnn@main

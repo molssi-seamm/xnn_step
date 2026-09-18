@@ -26,7 +26,8 @@ SEAMM xnn Plug-in
    :target: https://pypi.python.org/pypi/xnn_step
    :alt: PyPi VERSION
 
-A SEAMM plug-in for xnn
+A SEAMM plug-in providing machine-learned force fields (MLFFs) trained with `xnn`_ as
+model chemistries, run as MDI engines.
 
 * Free software: BSD-3-Clause
 * Documentation: https://molssi-seamm.github.io/xnn_step/index.html
@@ -35,7 +36,17 @@ A SEAMM plug-in for xnn
 Features
 --------
 
-* Please edit this section!
+* Advertises every xnn checkpoint found in the directories listed in ``xnn.ini`` to
+  the Model Chemistry step as ``xnn:MLFF@<model>``.
+* Launches ``xnn mdi`` -- the checkpoint served as a resident MDI engine -- for any step
+  that drives a model chemistry over MDI: Energy (single points for many structures),
+  LAMMPS (MD with the MLFF as the QM engine), Dimer Builder, Normal Mode Sampling.
+* Molecular and periodic systems (energy, forces and stress); runs on the CPU or a GPU
+  (``device`` in ``xnn.ini``).
+* There is no xnn step to place in a flowchart: the models are used through
+  Model Chemistry + Energy (or LAMMPS).
+
+.. _xnn: https://github.com/molssi-ai/xnn
 
 Acknowledgements
 ----------------

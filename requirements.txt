@@ -1,3 +1,4 @@
 seamm
+seamm-installer
 seamm-util
 seamm-widgets

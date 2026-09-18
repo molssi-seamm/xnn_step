@@ -77,10 +77,14 @@ setup(
         'Programming Language :: Python :: 3.9',
     ],
     entry_points={
-        'org.molssi.seamm': [
-            'xnn = xnn_step:XnnStep',
+        'console_scripts': [
+            'xnn-step-installer=xnn_step.__main__:run',
         ],
-        'org.molssi.seamm.tk': [
+        # Registered as a (headless) step so the Model Chemistry step discovers
+        # the MLFF models via get_model_chemistry_options(); deliberately NOT
+        # registered in the Tk namespace, since there is no step to add to a
+        # flowchart -- the models are used through Model Chemistry + Energy/LAMMPS.
+        'org.molssi.seamm': [
             'xnn = xnn_step:XnnStep',
         ],
     }

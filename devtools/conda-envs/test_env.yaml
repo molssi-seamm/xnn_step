@@ -33,6 +33,9 @@ dependencies:
 
   # Pure-Python packages: from PyPI
   - pip:
+    # SEAMM (pure Python; PyPI is never behind, conda-forge can lag)
+    - seamm
+    - seamm-installer
     # SEAMM (pulls in molsystem, seamm-util, seamm-widgets, ... from PyPI)
     - seamm
     # Documentation

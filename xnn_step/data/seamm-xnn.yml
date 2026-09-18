@@ -11,7 +11,9 @@ dependencies:
   - pip:
     - pymdi          # provides `import mdi` for the MDI engine
     - e3nn==0.4.4    # for the equivariant models (MACE, NequIP, Allegro)
-    - vesin-torch    # fast cell-list neighbor lists
+    # vesin-torch gives fast cell-list neighbor lists for large systems on cpu/cuda, but
+    # it forces float64 and so breaks Apple's mps device; add it yourself if wanted.
+    # - vesin-torch
     # The xnn code is published on PyPI under the name `xnns` (the name `xnn` is
     # an orphaned project awaiting transfer); the import name and the `xnn`
     # command are unchanged.

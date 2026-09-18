@@ -25,6 +25,9 @@ per executor, normally just ``[local]``:
     path may be given.
 ``device``
     The PyTorch device the engine evaluates on: ``cpu``, ``cuda``, ``cuda:0``, ``mps``.
+    On Apple silicon ``mps`` works only for a float32 model and only without the
+    optional ``vesin-torch`` neighbor-list package, which insists on float64 (Apple's
+    GPU has none); for small molecules the CPU is as fast or faster anyway.
 ``models``
     The directories searched for checkpoints, one per line. ``{root}`` expands to the
     SEAMM root (``~/SEAMM`` unless ``--root`` was given).

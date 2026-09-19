@@ -8,7 +8,7 @@
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="viewport" content="width=device-width, initial-scale=1" />
 
-    <title>Getting Started &#8212; SEAMM xnn Plug-in 2026.9.19 documentation</title>
+    <title>Getting Started &#8212; SEAMM xnn Plug-in 2026.9.19.1 documentation</title>
   
   
   
@@ -41,7 +41,7 @@
   <link rel="preload" as="script" href="../_static/scripts/bootstrap.js?digest=cb8930eaaf36d9849b67" />
 <link rel="preload" as="script" href="../_static/scripts/pydata-sphinx-theme.js?digest=cb8930eaaf36d9849b67" />
 
-    <script src="../_static/documentation_options.js?v=e8f1854e"></script>
+    <script src="../_static/documentation_options.js?v=d2ca50ee"></script>
     <script src="../_static/doctools.js?v=fd6eb6e6"></script>
     <script src="../_static/sphinx_highlight.js?v=6ffebe34"></script>
     <script src="../_static/clipboard.min.js?v=a7894cd8"></script>
@@ -55,7 +55,7 @@
     <link rel="prev" title="Welcome to the documentation for the xnn SEAMM plug-in" href="../index.html" />
   <meta name="viewport" content="width=device-width, initial-scale=1"/>
   <meta name="docsearch:language" content="en"/>
-  <meta name="docsearch:version" content="2026.9.19" />
+  <meta name="docsearch:version" content="2026.9.19.1" />
   
     
     <script src="../_static/searchtools.js"></script>
@@ -526,15 +526,33 @@ its own conda environment
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">xnn</span><span class="o">-</span><span class="n">step</span><span class="o">-</span><span class="n">installer</span> <span class="n">install</span>
 </pre></div>
 </div>
-<p>For a GPU, install the matching PyTorch build into that environment afterwards
-(see <a class="reference external" href="https://pytorch.org">https://pytorch.org</a>) and set <code class="docutils literal notranslate"><span class="pre">device</span> <span class="pre">=</span> <span class="pre">cuda</span></code> in <code class="docutils literal notranslate"><span class="pre">xnn.ini</span></code>.</p>
+<p>PyTorch is installed with pip, whose wheels support CUDA on Linux and Apple’s <code class="docutils literal notranslate"><span class="pre">mps</span></code>
+on macOS, so using a GPU normally needs no more than <code class="docutils literal notranslate"><span class="pre">device</span> <span class="pre">=</span> <span class="pre">cuda</span></code> in <code class="docutils literal notranslate"><span class="pre">xnn.ini</span></code>.
+To pin a particular CUDA version, install the matching build by hand afterwards,
+following <a class="reference external" href="https://pytorch.org">https://pytorch.org</a>:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">conda</span> <span class="n">run</span> <span class="o">-</span><span class="n">n</span> <span class="n">seamm</span><span class="o">-</span><span class="n">xnn</span> <span class="n">pip</span> <span class="n">install</span> <span class="n">torch</span> \
+    <span class="o">--</span><span class="n">index</span><span class="o">-</span><span class="n">url</span> <span class="n">https</span><span class="p">:</span><span class="o">//</span><span class="n">download</span><span class="o">.</span><span class="n">pytorch</span><span class="o">.</span><span class="n">org</span><span class="o">/</span><span class="n">whl</span><span class="o">/</span><span class="n">cu126</span>
+</pre></div>
+</div>
+<p><code class="docutils literal notranslate"><span class="pre">pymdi</span></code>, which provides the MDI library, comes from conda-forge: only that build links
+MDI against MPI, which the <code class="docutils literal notranslate"><span class="pre">-method</span> <span class="pre">MPI</span></code> launch used for LAMMPS dynamics needs.</p>
+<div class="admonition warning">
+<p class="admonition-title">Warning</p>
+<p><code class="docutils literal notranslate"><span class="pre">conda-environment</span></code> in <code class="docutils literal notranslate"><span class="pre">xnn.ini</span></code> may name an environment you built yourself, for
+instance one shared with LAMMPS. <code class="docutils literal notranslate"><span class="pre">xnn-step-installer</span> <span class="pre">update</span></code> then applies
+<code class="docutils literal notranslate"><span class="pre">seamm-xnn.yml</span></code> to <em>that</em> environment, so anything in it that the file also names
+may be replaced.</p>
+</div>
 </section>
 <section id="adding-models">
 <h2>Adding models<a class="headerlink" href="#adding-models" title="Link to this heading">#</a></h2>
-<p>Put the trained checkpoints (<code class="docutils literal notranslate"><span class="pre">best.pt</span></code> files written by the xnn trainer) in the
-directory <code class="docutils literal notranslate"><span class="pre">~/SEAMM/data/Forcefields/xnn</span></code> – or list other directories under <code class="docutils literal notranslate"><span class="pre">models</span></code>
-in <code class="docutils literal notranslate"><span class="pre">xnn.ini</span></code>, one per line. Each file is offered to the Model Chemistry step by its file
-stem, so <code class="docutils literal notranslate"><span class="pre">~/SEAMM/data/Forcefields/xnn/water_mace_les.pt</span></code> becomes the model chemistry
+<p>Put the trained checkpoints (<code class="docutils literal notranslate"><span class="pre">best.pt</span></code> files written by the xnn trainer) in
+<code class="docutils literal notranslate"><span class="pre">~/.seamm.d/data/Forcefields/xnn</span></code> (your own models) or
+<code class="docutils literal notranslate"><span class="pre">~/SEAMM/data/Forcefields/xnn</span></code> (models shared by everyone on the machine). Those two
+directories are searched by default, and a personal model shadows a machine-wide one of
+the same name. Other directories can be listed under <code class="docutils literal notranslate"><span class="pre">models</span></code> in <code class="docutils literal notranslate"><span class="pre">xnn.ini</span></code>, one per
+line. Each file is offered to the Model Chemistry step by its file stem, so
+<code class="docutils literal notranslate"><span class="pre">~/.seamm.d/data/Forcefields/xnn/water_mace_les.pt</span></code> becomes the model chemistry
 <code class="docutils literal notranslate"><span class="pre">xnn:MLFF&#64;water_mace_les</span></code>.</p>
 </section>
 <section id="using-a-model">

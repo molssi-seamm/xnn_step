@@ -8,7 +8,7 @@
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="viewport" content="width=device-width, initial-scale=1" />
 
-    <title>YYYY-MM-DD Initial development campaign &#8212; SEAMM xnn Plug-in 2026.9.19 documentation</title>
+    <title>2026-09-18 xnn plug-in and MLFF distribution &#8212; SEAMM xnn Plug-in 2026.9.19.1 documentation</title>
   
   
   
@@ -41,21 +41,21 @@
   <link rel="preload" as="script" href="../../../_static/scripts/bootstrap.js?digest=cb8930eaaf36d9849b67" />
 <link rel="preload" as="script" href="../../../_static/scripts/pydata-sphinx-theme.js?digest=cb8930eaaf36d9849b67" />
 
-    <script src="../../../_static/documentation_options.js?v=e8f1854e"></script>
+    <script src="../../../_static/documentation_options.js?v=d2ca50ee"></script>
     <script src="../../../_static/doctools.js?v=fd6eb6e6"></script>
     <script src="../../../_static/sphinx_highlight.js?v=6ffebe34"></script>
     <script src="../../../_static/clipboard.min.js?v=a7894cd8"></script>
     <script src="../../../_static/copybutton.js?v=f281be69"></script>
     <script src="../../../_static/design-tabs.js?v=f930bc37"></script>
-    <script>DOCUMENTATION_OPTIONS.pagename = 'developer_guide/campaigns/YYYY-MM-DD/index';</script>
+    <script>DOCUMENTATION_OPTIONS.pagename = 'developer_guide/campaigns/2026-09-18/index';</script>
     <script>DOCUMENTATION_OPTIONS.search_as_you_type = false;</script>
     <link rel="index" title="Index" href="../../../genindex.html" />
     <link rel="search" title="Search" href="../../../search.html" />
-    <link rel="next" title="API Documentation" href="../../../api/index.html" />
+    <link rel="next" title="Distributing MLFFs: sidecar and catalog (draft 2026-09-18)" href="mlff_distribution_scope.html" />
     <link rel="prev" title="Campaigns" href="../index.html" />
   <meta name="viewport" content="width=device-width, initial-scale=1"/>
   <meta name="docsearch:language" content="en"/>
-  <meta name="docsearch:version" content="2026.9.19" />
+  <meta name="docsearch:version" content="2026.9.19.1" />
   
     
     <script src="../../../_static/searchtools.js"></script>
@@ -460,7 +460,8 @@
 </ul>
 <ul class="current nav bd-sidenav">
 <li class="toctree-l1 current active has-children"><a class="reference internal" href="../index.html">Campaigns</a><details open="open"><summary><span class="toctree-toggle" role="presentation"><i class="fa-solid fa-chevron-down"></i></span></summary><ul class="current">
-<li class="toctree-l2 current active has-children"><a class="current reference internal" href="#">YYYY-MM-DD Initial development campaign</a><details open="open"><summary><span class="toctree-toggle" role="presentation"><i class="fa-solid fa-chevron-down"></i></span></summary><ul class="simple">
+<li class="toctree-l2 current active has-children"><a class="current reference internal" href="#">2026-09-18 xnn plug-in and MLFF distribution</a><details open="open"><summary><span class="toctree-toggle" role="presentation"><i class="fa-solid fa-chevron-down"></i></span></summary><ul>
+<li class="toctree-l3"><a class="reference internal" href="mlff_distribution_scope.html">Distributing MLFFs: sidecar and catalog (draft 2026-09-18)</a></li>
 </ul>
 </details></li>
 </ul>
@@ -511,7 +512,7 @@
     
     <li class="breadcrumb-item"><a href="../index.html" class="nav-link">Campaigns</a></li>
     
-    <li class="breadcrumb-item active" aria-current="page"><span class="ellipsis">YYYY-MM-DD Initial development campaign</span></li>
+    <li class="breadcrumb-item active" aria-current="page"><span class="ellipsis">2026-09-18 xnn plug-in and MLFF distribution</span></li>
   </ul>
 </nav>
 </div>
@@ -528,13 +529,27 @@
 <div id="searchbox"></div>
                 <article class="bd-article">
                   
-  <section id="yyyy-mm-dd-initial-development-campaign">
-<h1>YYYY-MM-DD Initial development campaign<a class="headerlink" href="#yyyy-mm-dd-initial-development-campaign" title="Link to this heading">#</a></h1>
-<section id="goal-of-v1">
-<h2>Goal of v1<a class="headerlink" href="#goal-of-v1" title="Link to this heading">#</a></h2>
-<p>Produce a SEAMM plug-in …</p>
+  <section id="xnn-plug-in-and-mlff-distribution">
+<h1>2026-09-18 xnn plug-in and MLFF distribution<a class="headerlink" href="#xnn-plug-in-and-mlff-distribution" title="Link to this heading">#</a></h1>
+<section id="goal">
+<h2>Goal<a class="headerlink" href="#goal" title="Link to this heading">#</a></h2>
+<p>Deliver xnn machine-learned force fields (MLFFs) as SEAMM model chemistries
+(the plug-in, released 2026.9.18/19), and design how the trained models
+themselves are published, discovered, cached and cited – see the scope document.</p>
 <p>Contents:</p>
 <div class="toctree-wrapper compound">
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="mlff_distribution_scope.html">Distributing MLFFs: sidecar and catalog (draft 2026-09-18)</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="mlff_distribution_scope.html#why">Why</a></li>
+<li class="toctree-l2"><a class="reference internal" href="mlff_distribution_scope.html#requirements-gathered-so-far">Requirements gathered so far</a></li>
+<li class="toctree-l2"><a class="reference internal" href="mlff_distribution_scope.html#the-sidecar">The sidecar</a></li>
+<li class="toctree-l2"><a class="reference internal" href="mlff_distribution_scope.html#the-catalog">The catalog</a></li>
+<li class="toctree-l2"><a class="reference internal" href="mlff_distribution_scope.html#resolution-and-caching">Resolution and caching</a></li>
+<li class="toctree-l2"><a class="reference internal" href="mlff_distribution_scope.html#utility-offline-and-secure-sites">Utility (offline and secure sites)</a></li>
+<li class="toctree-l2"><a class="reference internal" href="mlff_distribution_scope.html#open-questions">Open questions</a></li>
+</ul>
+</li>
+</ul>
 </div>
 </section>
 </section>
@@ -559,11 +574,11 @@
       </div>
     </a>
     <a class="right-next"
-       href="../../../api/index.html"
+       href="mlff_distribution_scope.html"
        title="next page">
       <div class="prev-next-info">
         <p class="prev-next-subtitle">next</p>
-        <p class="prev-next-title">API Documentation</p>
+        <p class="prev-next-title">Distributing MLFFs: sidecar and catalog (draft 2026-09-18)</p>
       </div>
       <i class="fa-solid fa-angle-right"></i>
     </a>
@@ -586,14 +601,14 @@
   </div>
   <nav id="pst-page-toc-nav" class="page-toc" aria-labelledby="pst-page-navigation-heading-2">
     <ul class="pst-show_toc_level nav section-nav flex-column">
-<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#goal-of-v1">Goal of v1</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#goal">Goal</a></li>
 </ul>
   </nav></div>
 
   <div class="sidebar-secondary-item">
 
   <div class="tocsection sourcelink">
-    <a href="../../../_sources/developer_guide/campaigns/YYYY-MM-DD/index.rst.txt">
+    <a href="../../../_sources/developer_guide/campaigns/2026-09-18/index.rst.txt">
       <i class="fa-solid fa-file-lines"></i> Show Source
     </a>
   </div>

@@ -1,0 +1,881 @@
+
+<!DOCTYPE html>
+
+
+<html lang="en" data-content_root="../../../" >
+
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="viewport" content="width=device-width, initial-scale=1" />
+
+    <title>Distributing MLFFs: sidecar and catalog (draft 2026-09-18) &#8212; SEAMM xnn Plug-in 2026.9.19.1 documentation</title>
+  
+  
+  
+  <script data-cfasync="false">
+    document.documentElement.dataset.mode = localStorage.getItem("mode") || "";
+    document.documentElement.dataset.theme = localStorage.getItem("theme") || "";
+  </script>
+  <!--
+    this give us a css class that will be invisible only if js is disabled
+  -->
+  <noscript>
+    <style>
+      .pst-js-only { display: none !important; }
+
+    </style>
+  </noscript>
+  
+  <!-- Loaded before other Sphinx assets -->
+  <link href="../../../_static/styles/theme.css?digest=cb8930eaaf36d9849b67" rel="stylesheet" />
+<link href="../../../_static/styles/pydata-sphinx-theme.css?digest=cb8930eaaf36d9849b67" rel="stylesheet" />
+
+    <link rel="stylesheet" type="text/css" href="../../../_static/pygments.css?v=b86133f3" />
+    <link rel="stylesheet" type="text/css" href="../../../_static/copybutton.css?v=76b2166b" />
+    <link rel="stylesheet" type="text/css" href="../../../_static/sphinx-design.min.css?v=95c83b7e" />
+    <link rel="stylesheet" type="text/css" href="../../../_static/css/custom.css?v=c224919a" />
+  
+  <!-- So that users can add custom icons -->
+  <script defer src="../../../_static/scripts/fontawesome.js?digest=cb8930eaaf36d9849b67"></script>
+  <!-- Pre-loaded scripts that we'll load fully later -->
+  <link rel="preload" as="script" href="../../../_static/scripts/bootstrap.js?digest=cb8930eaaf36d9849b67" />
+<link rel="preload" as="script" href="../../../_static/scripts/pydata-sphinx-theme.js?digest=cb8930eaaf36d9849b67" />
+
+    <script src="../../../_static/documentation_options.js?v=d2ca50ee"></script>
+    <script src="../../../_static/doctools.js?v=fd6eb6e6"></script>
+    <script src="../../../_static/sphinx_highlight.js?v=6ffebe34"></script>
+    <script src="../../../_static/clipboard.min.js?v=a7894cd8"></script>
+    <script src="../../../_static/copybutton.js?v=f281be69"></script>
+    <script src="../../../_static/design-tabs.js?v=f930bc37"></script>
+    <script>DOCUMENTATION_OPTIONS.pagename = 'developer_guide/campaigns/2026-09-18/mlff_distribution_scope';</script>
+    <script>DOCUMENTATION_OPTIONS.search_as_you_type = false;</script>
+    <link rel="index" title="Index" href="../../../genindex.html" />
+    <link rel="search" title="Search" href="../../../search.html" />
+    <link rel="next" title="API Documentation" href="../../../api/index.html" />
+    <link rel="prev" title="2026-09-18 xnn plug-in and MLFF distribution" href="index.html" />
+  <meta name="viewport" content="width=device-width, initial-scale=1"/>
+  <meta name="docsearch:language" content="en"/>
+  <meta name="docsearch:version" content="2026.9.19.1" />
+  
+    
+    <script src="../../../_static/searchtools.js"></script>
+    <script src="../../../_static/language_data.js"></script>
+    <script src="../../../searchindex.js"></script>
+  
+  </head>
+  <body data-default-mode="">
+  
+  
+  <div id="pst-skip-link" class="skip-link d-print-none"><a href="#main-content">Skip to main content</a></div>
+
+  
+  <div id="pst-scroll-pixel-helper"></div>
+  
+  <button type="button" class="btn rounded-pill" id="pst-back-to-top">
+    <i class="fa-solid fa-arrow-up"></i>Back to top</button>
+  
+  
+  
+  
+  <dialog id="pst-search-dialog">
+    
+<form class="bd-search d-flex align-items-center"
+      action="../../../search.html"
+      method="get">
+  <i class="fa-solid fa-magnifying-glass"></i>
+  <input type="search"
+         class="form-control"
+         name="q"
+         placeholder="Search the docs ..."
+         aria-label="Search the docs ..."
+         autocomplete="off"
+         autocorrect="off"
+         autocapitalize="off"
+         spellcheck="false"/>
+  <span class="search-button__kbd-shortcut"><kbd class="kbd-shortcut__modifier">Ctrl</kbd>+<kbd>K</kbd></span>
+</form>
+  </dialog>
+
+  <div class="pst-async-banner-revealer d-none">
+  <aside id="bd-header-version-warning" class="d-none d-print-none" aria-label="Version warning"></aside>
+</div>
+
+  
+    <header id="pst-header" class="bd-header navbar navbar-expand-lg bd-navbar d-print-none">
+<div class="bd-header__inner bd-page-width">
+  <button class="pst-navbar-icon sidebar-toggle primary-toggle" aria-label="Site navigation">
+    <span class="fa-solid fa-bars"></span>
+  </button>
+  
+  
+  <div class="col-lg-3 navbar-header-items__start">
+    
+      <div class="navbar-item">
+
+  
+    
+  
+
+<a class="navbar-brand logo" href="../../../index.html">
+  
+  
+  
+  
+  
+    
+    
+      
+    
+    
+    <img src="../../../_static/SEAMM logo.png" class="logo__image only-light" alt=""/>
+    <img src="../../../_static/SEAMM Inverted 288x181.png" class="logo__image only-dark pst-js-only" alt=""/>
+  
+  
+    <p class="title logo__title">xnn</p>
+  
+</a></div>
+    
+  </div>
+  
+  <div class="col-lg-9 navbar-header-items">
+    
+    <div class="me-auto navbar-header-items__center">
+      
+        <div class="navbar-item">
+<nav>
+  <ul class="bd-navbar-elements navbar-nav">
+    
+<li class="nav-item ">
+  <a class="nav-link nav-internal" href="../../../getting_started/index.html">
+    Getting Started
+  </a>
+</li>
+
+
+<li class="nav-item ">
+  <a class="nav-link nav-internal" href="../../../user_guide/index.html">
+    User Guide
+  </a>
+</li>
+
+
+<li class="nav-item current active">
+  <a class="nav-link nav-internal" href="../../index.html">
+    Developer Documentation
+  </a>
+</li>
+
+
+<li class="nav-item ">
+  <a class="nav-link nav-internal" href="../../../api/index.html">
+    API Documentation
+  </a>
+</li>
+
+            <li class="nav-item dropdown">
+                <button class="btn dropdown-toggle nav-item" type="button"
+                data-bs-toggle="dropdown" aria-expanded="false"
+                aria-controls="pst-nav-more-links">
+                    More
+                </button>
+                <ul id="pst-nav-more-links" class="dropdown-menu">
+                    
+<li class=" ">
+  <a class="nav-link dropdown-item nav-internal" href="../../../authors.html">
+    Development Team
+  </a>
+</li>
+
+
+<li class=" ">
+  <a class="nav-link dropdown-item nav-internal" href="../../../history.html">
+    History
+  </a>
+</li>
+
+
+<li class=" ">
+  <a class="nav-link dropdown-item nav-external" href="https://molssi-seamm.github.io">
+    Main SEAMM documentation
+  </a>
+</li>
+
+
+<li class=" ">
+  <a class="nav-link dropdown-item nav-external" href="https://molssi-seamm.github.io">
+    SEAMM Documentation
+  </a>
+</li>
+
+
+<li class=" ">
+  <a class="nav-link dropdown-item nav-external" href="https://molssi.org">
+    MolSSI
+  </a>
+</li>
+
+                </ul>
+            </li>
+            
+  </ul>
+</nav></div>
+      
+    </div>
+    
+    
+    <div class="navbar-header-items__end">
+      
+        <div class="navbar-item navbar-persistent--container">
+          
+
+<button class="btn search-button-field search-button__button pst-js-only" title="Search" aria-label="Search" data-bs-placement="bottom" data-bs-toggle="tooltip">
+ <i class="fa-solid fa-magnifying-glass"></i>
+ <span class="search-button__default-text">Search</span>
+ <span class="search-button__kbd-shortcut"><kbd class="kbd-shortcut__modifier">Ctrl</kbd>+<kbd class="kbd-shortcut__modifier">K</kbd></span>
+</button>
+        </div>
+      
+      
+        <div class="navbar-item">
+
+<div class="theme-switch-container dropdown pst-js-only" data-bs-toggle="tooltip" data-bs-placement="bottom" title="Color mode">
+  <button class="btn btn-sm nav-link pst-navbar-icon theme-switch-button dropdown-toggle" aria-label="Color mode" data-bs-toggle="dropdown">
+    <i class="theme-switch fa-solid fa-sun fa-lg fa-fw" data-mode="light" title="Light"></i>
+    <i class="theme-switch fa-solid fa-moon fa-lg fa-fw" data-mode="dark" title="Dark"></i>
+    <i class="theme-switch fa-solid fa-circle-half-stroke fa-lg fa-fw" data-mode="auto" title="System Settings"></i>
+  </button>
+  <ul class="dropdown-menu dropdown-menu-end">
+    <li><button class="dropdown-item d-flex align-items-center theme-change-button" data-mode="auto"><i class="fa-solid fa-circle-half-stroke fa-lg fa-fw me-1"></i>System Settings</button></li>
+    <li><button class="dropdown-item d-flex align-items-center theme-change-button" data-mode="light"><i class="fa-solid fa-sun fa-lg fa-fw me-1"></i>Light</button></li>
+    <li><button class="dropdown-item d-flex align-items-center theme-change-button" data-mode="dark"><i class="fa-solid fa-moon fa-lg fa-fw me-1"></i>Dark</button></li>
+  </ul>
+</div></div>
+      
+        <div class="navbar-item"><ul class="navbar-icon-links"
+    aria-label="Icon Links">
+        <li class="nav-item">
+          
+          
+          
+          
+          
+          
+          
+          
+          <a href="https://github.com/molssi-seamm/geometry_analysis_step" title="GitHub" class="nav-link pst-navbar-icon" rel="noopener" target="_blank" data-bs-toggle="tooltip" data-bs-placement="bottom"><i class="fa-brands fa-square-github fa-lg" aria-hidden="true"></i><span class="visually-hidden">GitHub</span></a>
+        </li>
+        <li class="nav-item">
+          
+          
+          
+          
+          
+          
+          
+          
+          <a href="https://twitter.com/MolSSI_NSF" title="Twitter" class="nav-link pst-navbar-icon" rel="noopener" target="_blank" data-bs-toggle="tooltip" data-bs-placement="bottom"><i class="fa-brands fa-square-twitter fa-lg" aria-hidden="true"></i><span class="visually-hidden">Twitter</span></a>
+        </li>
+</ul></div>
+      
+    </div>
+    
+  </div>
+  
+  
+    <div class="navbar-persistent--mobile">
+
+<button class="btn search-button-field search-button__button pst-js-only" title="Search" aria-label="Search" data-bs-placement="bottom" data-bs-toggle="tooltip">
+ <i class="fa-solid fa-magnifying-glass"></i>
+ <span class="search-button__default-text">Search</span>
+ <span class="search-button__kbd-shortcut"><kbd class="kbd-shortcut__modifier">Ctrl</kbd>+<kbd class="kbd-shortcut__modifier">K</kbd></span>
+</button>
+    </div>
+  
+
+  
+    <button class="pst-navbar-icon sidebar-toggle secondary-toggle" aria-label="On this page">
+      <span class="fa-solid fa-outdent"></span>
+    </button>
+  
+</div>
+
+    </header>
+  
+
+  <div class="bd-container">
+    <div class="bd-container__inner bd-page-width">
+      
+      
+      
+      <dialog id="pst-primary-sidebar-modal"></dialog>
+      <div id="pst-primary-sidebar" class="bd-sidebar-primary bd-sidebar">
+        
+
+  
+  <div class="sidebar-header-items sidebar-primary__section">
+    
+    
+      <div class="sidebar-header-items__center">
+        
+          
+          
+            <div class="navbar-item">
+<nav>
+  <ul class="bd-navbar-elements navbar-nav">
+    
+<li class="nav-item ">
+  <a class="nav-link nav-internal" href="../../../getting_started/index.html">
+    Getting Started
+  </a>
+</li>
+
+
+<li class="nav-item ">
+  <a class="nav-link nav-internal" href="../../../user_guide/index.html">
+    User Guide
+  </a>
+</li>
+
+
+<li class="nav-item current active">
+  <a class="nav-link nav-internal" href="../../index.html">
+    Developer Documentation
+  </a>
+</li>
+
+
+<li class="nav-item ">
+  <a class="nav-link nav-internal" href="../../../api/index.html">
+    API Documentation
+  </a>
+</li>
+
+
+<li class="nav-item ">
+  <a class="nav-link nav-internal" href="../../../authors.html">
+    Development Team
+  </a>
+</li>
+
+
+<li class="nav-item ">
+  <a class="nav-link nav-internal" href="../../../history.html">
+    History
+  </a>
+</li>
+
+
+<li class="nav-item ">
+  <a class="nav-link nav-external" href="https://molssi-seamm.github.io">
+    Main SEAMM documentation
+  </a>
+</li>
+
+
+<li class="nav-item ">
+  <a class="nav-link nav-external" href="https://molssi-seamm.github.io">
+    SEAMM Documentation
+  </a>
+</li>
+
+
+<li class="nav-item ">
+  <a class="nav-link nav-external" href="https://molssi.org">
+    MolSSI
+  </a>
+</li>
+
+  </ul>
+</nav></div>
+          
+        
+      </div>
+    
+    
+    
+      <div class="sidebar-header-items__end">
+        
+          <div class="navbar-item">
+
+<div class="theme-switch-container dropdown pst-js-only" data-bs-toggle="tooltip" data-bs-placement="bottom" title="Color mode">
+  <button class="btn btn-sm nav-link pst-navbar-icon theme-switch-button dropdown-toggle" aria-label="Color mode" data-bs-toggle="dropdown">
+    <i class="theme-switch fa-solid fa-sun fa-lg fa-fw" data-mode="light" title="Light"></i>
+    <i class="theme-switch fa-solid fa-moon fa-lg fa-fw" data-mode="dark" title="Dark"></i>
+    <i class="theme-switch fa-solid fa-circle-half-stroke fa-lg fa-fw" data-mode="auto" title="System Settings"></i>
+  </button>
+  <ul class="dropdown-menu dropdown-menu-end">
+    <li><button class="dropdown-item d-flex align-items-center theme-change-button" data-mode="auto"><i class="fa-solid fa-circle-half-stroke fa-lg fa-fw me-1"></i>System Settings</button></li>
+    <li><button class="dropdown-item d-flex align-items-center theme-change-button" data-mode="light"><i class="fa-solid fa-sun fa-lg fa-fw me-1"></i>Light</button></li>
+    <li><button class="dropdown-item d-flex align-items-center theme-change-button" data-mode="dark"><i class="fa-solid fa-moon fa-lg fa-fw me-1"></i>Dark</button></li>
+  </ul>
+</div></div>
+        
+          <div class="navbar-item"><ul class="navbar-icon-links"
+    aria-label="Icon Links">
+        <li class="nav-item">
+          
+          
+          
+          
+          
+          
+          
+          
+          <a href="https://github.com/molssi-seamm/geometry_analysis_step" title="GitHub" class="nav-link pst-navbar-icon" rel="noopener" target="_blank" data-bs-toggle="tooltip" data-bs-placement="bottom"><i class="fa-brands fa-square-github fa-lg" aria-hidden="true"></i><span class="visually-hidden">GitHub</span></a>
+        </li>
+        <li class="nav-item">
+          
+          
+          
+          
+          
+          
+          
+          
+          <a href="https://twitter.com/MolSSI_NSF" title="Twitter" class="nav-link pst-navbar-icon" rel="noopener" target="_blank" data-bs-toggle="tooltip" data-bs-placement="bottom"><i class="fa-brands fa-square-twitter fa-lg" aria-hidden="true"></i><span class="visually-hidden">Twitter</span></a>
+        </li>
+</ul></div>
+        
+      </div>
+    
+  </div>
+  
+    <div class="sidebar-primary-items__start sidebar-primary__section">
+        <div class="sidebar-primary-item pst-sidebar-collapse"><button id="pst-collapse-sidebar-button" aria-expanded="true" aria-controls="pst-primary-sidebar">
+  <svg class="pst-icon" role="img" aria-hidden="true" focusable="false" viewBox="0 0 16 16" xmlns="http://www.w3.org/2000/svg">
+    <path fill="currentColor" d="M3 15.5C2.36232 15.5 1.74874 15.2564 1.28478 14.8189C0.820828 14.3815 0.541576 13.7832 0.504167 13.1467L0.5 13L0.5 3C0.499965 2.36232 0.743605 1.74874 1.18107 1.28478C1.61854 0.820828 2.21676 0.541576 2.85333 0.504167L3 0.5L13 0.5C13.6377 0.499965 14.2513 0.743605 14.7152 1.18107C15.1792 1.61854 15.4584 2.21676 15.4958 2.85333L15.5 3L15.5 13C15.5 13.6377 15.2564 14.2513 14.8189 14.7152C14.3815 15.1792 13.7832 15.4584 13.1467 15.4958L13 15.5L3 15.5ZM3 13.8333L10.5 13.8333L10.5 2.16667L3 2.16667C2.79589 2.16669 2.59889 2.24163 2.44636 2.37726C2.29383 2.5129 2.19638 2.69979 2.1725 2.9025L2.16667 3L2.16667 13C2.16669 13.2041 2.24163 13.4011 2.37726 13.5536C2.5129 13.7062 2.69979 13.8036 2.9025 13.8275L3 13.8333ZM6.65583 10.325L6.5775 10.2558L4.91083 8.58917C4.76735 8.44567 4.68116 8.25476 4.66843 8.05223C4.65569 7.84971 4.71729 7.6495 4.84167 7.48917L4.91083 7.41083L6.5775 5.74417C6.72747 5.59471 6.9287 5.50794 7.14032 5.50148C7.35194 5.49502 7.55809 5.56935 7.7169 5.70937C7.8757 5.8494 7.97525 6.04463 7.99533 6.25539C8.01541 6.46616 7.95451 6.67667 7.825 6.84417L7.75583 6.9225L6.67917 8L7.75583 9.0775C7.89931 9.22099 7.98551 9.41191 7.99824 9.61443C8.01097 9.81695 7.94938 10.0172 7.825 10.1775L7.75583 10.2558C7.61234 10.3993 7.42142 10.4855 7.2189 10.4982C7.01638 10.511 6.81617 10.4494 6.65583 10.325Z"/>
+  </svg>
+  <span class="pst-collapse-sidebar-label">Collapse Sidebar</span>
+  <span class="pst-expand-sidebar-label">Expand Sidebar</span>
+</button></div>
+        <div class="sidebar-primary-item">
+
+<nav class="bd-docs-nav bd-links"
+     aria-label="Section Navigation">
+  <p class="bd-links__title" role="heading" aria-level="1">Section Navigation</p>
+  <div class="bd-toc-item navbar-nav"><ul class="nav bd-sidenav">
+<li class="toctree-l1"><a class="reference internal" href="../../installation.html">Installation</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../usage.html">Usage</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../contributing.html">Contributing</a></li>
+</ul>
+<ul class="current nav bd-sidenav">
+<li class="toctree-l1 current active has-children"><a class="reference internal" href="../index.html">Campaigns</a><details open="open"><summary><span class="toctree-toggle" role="presentation"><i class="fa-solid fa-chevron-down"></i></span></summary><ul class="current">
+<li class="toctree-l2 current active has-children"><a class="reference internal" href="index.html">2026-09-18 xnn plug-in and MLFF distribution</a><details open="open"><summary><span class="toctree-toggle" role="presentation"><i class="fa-solid fa-chevron-down"></i></span></summary><ul class="current">
+<li class="toctree-l3 current active"><a class="current reference internal" href="#">Distributing MLFFs: sidecar and catalog (draft 2026-09-18)</a></li>
+</ul>
+</details></li>
+</ul>
+</details></li>
+</ul>
+</div>
+</nav></div>
+    </div>
+  
+  
+  <div class="sidebar-primary-items__end sidebar-primary__section">
+      <div class="sidebar-primary-item">
+<div id="ethical-ad-placement"
+      class="flat"
+      data-ea-publisher="readthedocs"
+      data-ea-type="readthedocs-sidebar"
+      data-ea-manual="true">
+</div></div>
+  </div>
+
+
+      </div>
+      
+      <main id="main-content" class="bd-main" role="main">
+        
+        
+          <div class="bd-content">
+            <div class="bd-article-container">
+              
+              <div class="bd-header-article d-print-none">
+<div class="header-article-items header-article__inner">
+  
+    <div class="header-article-items__start">
+      
+        <div class="header-article-item">
+
+<nav aria-label="Breadcrumb" class="d-print-none">
+  <ul class="bd-breadcrumbs">
+    
+    <li class="breadcrumb-item breadcrumb-home">
+      <a href="../../../index.html" class="nav-link" aria-label="Home">
+        <i class="fa-solid fa-home"></i>
+      </a>
+    </li>
+    
+    <li class="breadcrumb-item"><a href="../../index.html" class="nav-link">Developer Documentation</a></li>
+    
+    
+    <li class="breadcrumb-item"><a href="../index.html" class="nav-link">Campaigns</a></li>
+    
+    
+    <li class="breadcrumb-item"><a href="index.html" class="nav-link">2026-09-18 xnn plug-in and MLFF distribution</a></li>
+    
+    <li class="breadcrumb-item active" aria-current="page"><span class="ellipsis">Distributing MLFFs: sidecar and catalog (draft 2026-09-18)</span></li>
+  </ul>
+</nav>
+</div>
+      
+    </div>
+  
+  
+</div>
+</div>
+              
+              
+              
+                
+<div id="searchbox"></div>
+                <article class="bd-article">
+                  
+  <section id="distributing-mlffs-sidecar-and-catalog-draft-2026-09-18">
+<h1>Distributing MLFFs: sidecar and catalog (draft 2026-09-18)<a class="headerlink" href="#distributing-mlffs-sidecar-and-catalog-draft-2026-09-18" title="Link to this heading">#</a></h1>
+<p>Status: <strong>draft for discussion</strong> (Paul, Sina). Nothing here is implemented yet.</p>
+<section id="why">
+<h2>Why<a class="headerlink" href="#why" title="Link to this heading">#</a></h2>
+<p>Trained checkpoints are megabytes to gigabytes, so they do not belong in a
+plug-in’s <code class="docutils literal notranslate"><span class="pre">data/</span></code> directory on GitHub. Publishing each model on Zenodo gives
+it a DOI (a <em>concept</em> DOI that always resolves to the newest version, plus one
+DOI per version), long-term storage, and a citation. SEAMM then needs three
+things: a way to <em>describe</em> a model (the sidecar), a way to <em>find</em> the models we
+recommend (the catalog), and rules for <em>caching, updating and citing</em> them.</p>
+</section>
+<section id="requirements-gathered-so-far">
+<h2>Requirements gathered so far<a class="headerlink" href="#requirements-gathered-so-far" title="Link to this heading">#</a></h2>
+<ul class="simple">
+<li><p>The curated catalog must be <strong>easy to update by hand, several times a day if
+needed</strong> – the packaging workflow depends on it. This rules out putting the
+catalog itself in a Zenodo record (every edit would be a new immutable
+version). The big files go on Zenodo; the small catalog lives in a Git repo
+and is fetched as a raw file.</p></li>
+<li><p>Offline and secure sites: a model fetched on one machine, or from the Zenodo
+web page by hand, must be fully usable (and citable) when copied to a machine
+without Internet access. Hence the sidecar travels with the checkpoint.</p></li>
+<li><p>The model-chemistry <em>name</em> stays the plain model name (<code class="docutils literal notranslate"><span class="pre">xnn:MLFF&#64;water</span></code>);
+which version and which source were used are reported and cited, not encoded
+in the name, so a retrain does not change anyone’s flowchart.</p></li>
+<li><p>xnn checkpoints already carry some of this internally (<code class="docutils literal notranslate"><span class="pre">{&quot;model&quot;:</span>
+<span class="pre">state_dict,</span> <span class="pre">&quot;cfg&quot;:</span> <span class="pre">Config}</span></code>: model family, cutoff, architecture, the species
+list in <code class="docutils literal notranslate"><span class="pre">cfg.model.extra</span></code>, the training paths and property keys). Whatever
+can be derived from the checkpoint should be <em>derived</em>, not retyped; the
+sidecar adds what the checkpoint cannot know (DOI, provenance, conventions,
+licence). Open question for Sina: is <code class="docutils literal notranslate"><span class="pre">cfg</span></code> stable enough to read from
+outside the trainer, and can xnn write the sidecar itself at <code class="docutils literal notranslate"><span class="pre">save</span></code> time?</p></li>
+</ul>
+</section>
+<section id="the-sidecar">
+<h2>The sidecar<a class="headerlink" href="#the-sidecar" title="Link to this heading">#</a></h2>
+<p>One JSON file next to each checkpoint, same stem, extension <code class="docutils literal notranslate"><span class="pre">.mlff.json</span></code>
+(<code class="docutils literal notranslate"><span class="pre">water_mace_les.pt</span></code> + <code class="docutils literal notranslate"><span class="pre">water_mace_les.mlff.json</span></code>). It is what SEAMM reads;
+the checkpoint is opaque to SEAMM. Fields marked <em>derivable</em> can be filled from
+the checkpoint by the publishing utility; the rest are supplied by the author.</p>
+<div class="highlight-json notranslate"><div class="highlight"><pre><span></span><span class="p">{</span>
+<span class="w">  </span><span class="nt">"schema"</span><span class="p">:</span><span class="w"> </span><span class="s2">"seamm-mlff-sidecar/1"</span><span class="p">,</span>
+
+<span class="w">  </span><span class="nt">"name"</span><span class="p">:</span><span class="w"> </span><span class="s2">"water_mace_les"</span><span class="p">,</span>
+<span class="w">  </span><span class="nt">"title"</span><span class="p">:</span><span class="w"> </span><span class="s2">"Water MACE-LES, run 56 + trimers"</span><span class="p">,</span>
+<span class="w">  </span><span class="nt">"description"</span><span class="p">:</span><span class="w"> </span><span class="s2">"MACE with long-range electrostatics (LES) trained on ..."</span><span class="p">,</span>
+<span class="w">  </span><span class="nt">"version"</span><span class="p">:</span><span class="w"> </span><span class="s2">"2026.09.15"</span><span class="p">,</span>
+<span class="w">  </span><span class="nt">"created"</span><span class="p">:</span><span class="w"> </span><span class="s2">"2026-09-15T19:37:00Z"</span><span class="p">,</span>
+<span class="w">  </span><span class="nt">"authors"</span><span class="p">:</span><span class="w"> </span><span class="p">[</span>
+<span class="w">    </span><span class="p">{</span><span class="nt">"name"</span><span class="p">:</span><span class="w"> </span><span class="s2">"Sina Mostafanejad"</span><span class="p">,</span><span class="w"> </span><span class="nt">"affiliation"</span><span class="p">:</span><span class="w"> </span><span class="s2">"MolSSI"</span><span class="p">,</span><span class="w"> </span><span class="nt">"orcid"</span><span class="p">:</span><span class="w"> </span><span class="s2">"0000-..."</span><span class="p">}</span>
+<span class="w">  </span><span class="p">],</span>
+<span class="w">  </span><span class="nt">"license"</span><span class="p">:</span><span class="w"> </span><span class="s2">"CC-BY-4.0"</span><span class="p">,</span>
+
+<span class="w">  </span><span class="nt">"doi"</span><span class="p">:</span><span class="w"> </span><span class="s2">"10.5281/zenodo.1234567"</span><span class="p">,</span>
+<span class="w">  </span><span class="nt">"concept_doi"</span><span class="p">:</span><span class="w"> </span><span class="s2">"10.5281/zenodo.1234566"</span><span class="p">,</span>
+<span class="w">  </span><span class="nt">"zenodo_record"</span><span class="p">:</span><span class="w"> </span><span class="mi">1234567</span><span class="p">,</span>
+<span class="w">  </span><span class="nt">"files"</span><span class="p">:</span><span class="w"> </span><span class="p">{</span>
+<span class="w">    </span><span class="nt">"water_mace_les.pt"</span><span class="p">:</span><span class="w"> </span><span class="p">{</span><span class="nt">"sha256"</span><span class="p">:</span><span class="w"> </span><span class="s2">"…"</span><span class="p">,</span><span class="w"> </span><span class="nt">"size"</span><span class="p">:</span><span class="w"> </span><span class="mi">3653832</span><span class="p">}</span>
+<span class="w">  </span><span class="p">},</span>
+
+<span class="w">  </span><span class="nt">"engine"</span><span class="p">:</span><span class="w"> </span><span class="p">{</span>
+<span class="w">    </span><span class="nt">"code"</span><span class="p">:</span><span class="w"> </span><span class="s2">"xnn"</span><span class="p">,</span>
+<span class="w">    </span><span class="nt">"min_version"</span><span class="p">:</span><span class="w"> </span><span class="s2">"0.1.0"</span><span class="p">,</span>
+<span class="w">    </span><span class="nt">"family"</span><span class="p">:</span><span class="w"> </span><span class="s2">"mace"</span><span class="p">,</span>
+<span class="w">    </span><span class="nt">"dtype"</span><span class="p">:</span><span class="w"> </span><span class="s2">"float32"</span><span class="p">,</span>
+<span class="w">    </span><span class="nt">"cutoff"</span><span class="p">:</span><span class="w"> </span><span class="mf">6.0</span><span class="p">,</span>
+<span class="w">    </span><span class="nt">"cutoff_units"</span><span class="p">:</span><span class="w"> </span><span class="s2">"Å"</span><span class="p">,</span>
+<span class="w">    </span><span class="nt">"checkpoint_format"</span><span class="p">:</span><span class="w"> </span><span class="s2">"xnn-trainer/1"</span>
+<span class="w">  </span><span class="p">},</span>
+
+<span class="w">  </span><span class="nt">"applicability"</span><span class="p">:</span><span class="w"> </span><span class="p">{</span>
+<span class="w">    </span><span class="nt">"elements"</span><span class="p">:</span><span class="w"> </span><span class="p">[</span><span class="s2">"H"</span><span class="p">,</span><span class="w"> </span><span class="s2">"O"</span><span class="p">],</span>
+<span class="w">    </span><span class="nt">"periodic"</span><span class="p">:</span><span class="w"> </span><span class="kc">true</span><span class="p">,</span>
+<span class="w">    </span><span class="nt">"charges"</span><span class="p">:</span><span class="w"> </span><span class="p">[</span><span class="mi">0</span><span class="p">],</span>
+<span class="w">    </span><span class="nt">"spin_multiplicities"</span><span class="p">:</span><span class="w"> </span><span class="p">[</span><span class="mi">1</span><span class="p">],</span>
+<span class="w">    </span><span class="nt">"phases"</span><span class="p">:</span><span class="w"> </span><span class="p">[</span><span class="s2">"gas-phase clusters"</span><span class="p">,</span><span class="w"> </span><span class="s2">"liquid water"</span><span class="p">],</span>
+<span class="w">    </span><span class="nt">"notes"</span><span class="p">:</span><span class="w"> </span><span class="s2">"Trained on 1- to 3-mers plus liquid snapshots; not for ions."</span>
+<span class="w">  </span><span class="p">},</span>
+
+<span class="w">  </span><span class="nt">"conventions"</span><span class="p">:</span><span class="w"> </span><span class="p">{</span>
+<span class="w">    </span><span class="nt">"energy_units"</span><span class="p">:</span><span class="w"> </span><span class="s2">"eV"</span><span class="p">,</span>
+<span class="w">    </span><span class="nt">"length_units"</span><span class="p">:</span><span class="w"> </span><span class="s2">"Å"</span><span class="p">,</span>
+<span class="w">    </span><span class="nt">"energy_reference"</span><span class="p">:</span><span class="w"> </span><span class="s2">"formation energy, isolated-atom reference, E0 = 0"</span><span class="p">,</span>
+<span class="w">    </span><span class="nt">"reference_model_chemistry"</span><span class="p">:</span><span class="w"> </span><span class="s2">"ORCA:DFT@revDSD-PBEP86-D4/def2-TZVPPD"</span><span class="p">,</span>
+<span class="w">    </span><span class="nt">"counterpoise"</span><span class="p">:</span><span class="w"> </span><span class="s2">"SSFC"</span><span class="p">,</span>
+<span class="w">    </span><span class="nt">"stress_sign"</span><span class="p">:</span><span class="w"> </span><span class="s2">"pressure (MDI convention)"</span>
+<span class="w">  </span><span class="p">},</span>
+
+<span class="w">  </span><span class="nt">"training"</span><span class="p">:</span><span class="w"> </span><span class="p">{</span>
+<span class="w">    </span><span class="nt">"data_doi"</span><span class="p">:</span><span class="w"> </span><span class="s2">"10.5281/zenodo.7654321"</span><span class="p">,</span>
+<span class="w">    </span><span class="nt">"n_structures"</span><span class="p">:</span><span class="w"> </span><span class="mi">8666</span><span class="p">,</span>
+<span class="w">    </span><span class="nt">"energy_mae"</span><span class="p">:</span><span class="w"> </span><span class="p">{</span><span class="nt">"value"</span><span class="p">:</span><span class="w"> </span><span class="mf">0.4</span><span class="p">,</span><span class="w"> </span><span class="nt">"units"</span><span class="p">:</span><span class="w"> </span><span class="s2">"meV/atom"</span><span class="p">},</span>
+<span class="w">    </span><span class="nt">"force_mae"</span><span class="p">:</span><span class="w"> </span><span class="p">{</span><span class="nt">"value"</span><span class="p">:</span><span class="w"> </span><span class="mf">12.0</span><span class="p">,</span><span class="w"> </span><span class="nt">"units"</span><span class="p">:</span><span class="w"> </span><span class="s2">"meV/Å"</span><span class="p">},</span>
+<span class="w">    </span><span class="nt">"test_set"</span><span class="p">:</span><span class="w"> </span><span class="s2">"held-out 10 %"</span>
+<span class="w">  </span><span class="p">},</span>
+
+<span class="w">  </span><span class="nt">"citations"</span><span class="p">:</span><span class="w"> </span><span class="p">[</span>
+<span class="w">    </span><span class="p">{</span><span class="nt">"doi"</span><span class="p">:</span><span class="w"> </span><span class="s2">"10.5281/zenodo.1234567"</span><span class="p">,</span><span class="w"> </span><span class="nt">"note"</span><span class="p">:</span><span class="w"> </span><span class="s2">"This model."</span><span class="p">},</span>
+<span class="w">    </span><span class="p">{</span><span class="nt">"doi"</span><span class="p">:</span><span class="w"> </span><span class="s2">"10.48550/arXiv.2206.07697"</span><span class="p">,</span><span class="w"> </span><span class="nt">"note"</span><span class="p">:</span><span class="w"> </span><span class="s2">"MACE architecture."</span><span class="p">}</span>
+<span class="w">  </span><span class="p">]</span>
+<span class="p">}</span>
+</pre></div>
+</div>
+<section id="field-notes">
+<h3>Field notes<a class="headerlink" href="#field-notes" title="Link to this heading">#</a></h3>
+<ul class="simple">
+<li><p><code class="docutils literal notranslate"><span class="pre">schema</span></code> lets the reader reject or upgrade old sidecars.</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">name</span></code> is the model-chemistry method token; it must avoid <code class="docutils literal notranslate"><span class="pre">:</span> <span class="pre">&#64;</span> <span class="pre">/</span> <span class="pre">|</span></code> and
+should be stable across versions. <code class="docutils literal notranslate"><span class="pre">version</span></code> is free text but a date is
+recommended, matching SEAMM’s CalVer habit.</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">doi</span></code> / <code class="docutils literal notranslate"><span class="pre">concept_doi</span></code> / <code class="docutils literal notranslate"><span class="pre">zenodo_record</span></code>: the version DOI is what a job
+cites; the concept DOI is what the update check follows. All three are absent
+for a private, unpublished model – the sidecar is still useful.</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">files</span></code> with <code class="docutils literal notranslate"><span class="pre">sha256</span></code>: integrity after a manual copy, and detection of a
+model that changed without a version bump.</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">engine</span></code>: everything the launcher and the driver need to know without
+loading torch – the family, dtype (mps needs float32), cutoff, and the
+minimum xnn that can unpickle it. <em>Derivable</em> from <code class="docutils literal notranslate"><span class="pre">cfg</span></code> except
+<code class="docutils literal notranslate"><span class="pre">min_version</span></code>.</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">applicability</span></code>: what the Model Chemistry step can filter on (elements,
+periodic) and what the Energy step should warn about at run time (a charged or
+open-shell configuration for a model trained on neutral singlets). <code class="docutils literal notranslate"><span class="pre">elements</span></code>
+is derivable from the species list in <code class="docutils literal notranslate"><span class="pre">cfg.model.extra</span></code>.</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">conventions</span></code>: the campaign decisions a consumer must know to compare with
+QM – units, and above all the <strong>energy reference</strong> (per-atom formation energy
+with E0 = 0, per the water/electrolyte plan). Without this a REF_energy from
+the model and one from ORCA cannot be put on the same axis.</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">training</span></code>: provenance and headline accuracy; the <code class="docutils literal notranslate"><span class="pre">data_doi</span></code> closes the
+loop to the training set on Zenodo.</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">citations</span></code>: what <code class="docutils literal notranslate"><span class="pre">self.references.cite</span></code> should add when the model is
+used, beyond the plug-in’s own reference.</p></li>
+</ul>
+</section>
+</section>
+<section id="the-catalog">
+<h2>The catalog<a class="headerlink" href="#the-catalog" title="Link to this heading">#</a></h2>
+<p>A single JSON file in a small Git repository (proposed
+<code class="docutils literal notranslate"><span class="pre">molssi-seamm/mlff-catalog</span></code>, file <code class="docutils literal notranslate"><span class="pre">catalog.json</span></code> on <code class="docutils literal notranslate"><span class="pre">main</span></code>), fetched by
+raw URL. Editing it is a commit – by hand or by the publishing utility – so
+it can change as often as needed, with history and review if wanted. Zenodo
+holds the files; the catalog holds pointers plus a copy of each model’s sidecar
+so the Model Chemistry dialog can list and filter models without touching
+Zenodo at all.</p>
+<div class="highlight-json notranslate"><div class="highlight"><pre><span></span><span class="p">{</span>
+<span class="w">  </span><span class="nt">"schema"</span><span class="p">:</span><span class="w"> </span><span class="s2">"seamm-mlff-catalog/1"</span><span class="p">,</span>
+<span class="w">  </span><span class="nt">"updated"</span><span class="p">:</span><span class="w"> </span><span class="s2">"2026-09-18T21:00:00Z"</span><span class="p">,</span>
+<span class="w">  </span><span class="nt">"models"</span><span class="p">:</span><span class="w"> </span><span class="p">{</span>
+<span class="w">    </span><span class="nt">"water_mace_les"</span><span class="p">:</span><span class="w"> </span><span class="p">{</span>
+<span class="w">      </span><span class="nt">"concept_doi"</span><span class="p">:</span><span class="w"> </span><span class="s2">"10.5281/zenodo.1234566"</span><span class="p">,</span>
+<span class="w">      </span><span class="nt">"latest"</span><span class="p">:</span><span class="w"> </span><span class="s2">"2026.09.15"</span><span class="p">,</span>
+<span class="w">      </span><span class="nt">"versions"</span><span class="p">:</span><span class="w"> </span><span class="p">{</span>
+<span class="w">        </span><span class="nt">"2026.09.15"</span><span class="p">:</span><span class="w"> </span><span class="p">{</span>
+<span class="w">          </span><span class="nt">"doi"</span><span class="p">:</span><span class="w"> </span><span class="s2">"10.5281/zenodo.1234567"</span><span class="p">,</span>
+<span class="w">          </span><span class="nt">"zenodo_record"</span><span class="p">:</span><span class="w"> </span><span class="mi">1234567</span><span class="p">,</span>
+<span class="w">          </span><span class="nt">"files"</span><span class="p">:</span><span class="w"> </span><span class="p">{</span><span class="nt">"water_mace_les.pt"</span><span class="p">:</span><span class="w"> </span><span class="p">{</span><span class="nt">"sha256"</span><span class="p">:</span><span class="w"> </span><span class="s2">"…"</span><span class="p">,</span><span class="w"> </span><span class="nt">"size"</span><span class="p">:</span><span class="w"> </span><span class="mi">3653832</span><span class="p">}},</span>
+<span class="w">          </span><span class="nt">"sidecar"</span><span class="p">:</span><span class="w"> </span><span class="p">{</span><span class="w"> </span><span class="s2">"...the full sidecar above..."</span><span class="w"> </span><span class="p">}</span>
+<span class="w">        </span><span class="p">},</span>
+<span class="w">        </span><span class="nt">"2026.08.08"</span><span class="p">:</span><span class="w"> </span><span class="p">{</span>
+<span class="w">          </span><span class="nt">"doi"</span><span class="p">:</span><span class="w"> </span><span class="s2">"10.5281/zenodo.1234500"</span><span class="p">,</span>
+<span class="w">          </span><span class="nt">"zenodo_record"</span><span class="p">:</span><span class="w"> </span><span class="mi">1234500</span><span class="p">,</span>
+<span class="w">          </span><span class="nt">"files"</span><span class="p">:</span><span class="w"> </span><span class="p">{</span><span class="nt">"water_mace_les.pt"</span><span class="p">:</span><span class="w"> </span><span class="p">{</span><span class="nt">"sha256"</span><span class="p">:</span><span class="w"> </span><span class="s2">"…"</span><span class="p">,</span><span class="w"> </span><span class="nt">"size"</span><span class="p">:</span><span class="w"> </span><span class="mi">3653832</span><span class="p">}},</span>
+<span class="w">          </span><span class="nt">"sidecar"</span><span class="p">:</span><span class="w"> </span><span class="p">{</span><span class="w"> </span><span class="s2">"..."</span><span class="w"> </span><span class="p">},</span>
+<span class="w">          </span><span class="nt">"deprecated"</span><span class="p">:</span><span class="w"> </span><span class="s2">"Superseded by 2026.09.15 (trimer data added)."</span>
+<span class="w">        </span><span class="p">}</span>
+<span class="w">      </span><span class="p">}</span>
+<span class="w">    </span><span class="p">}</span>
+<span class="w">  </span><span class="p">}</span>
+<span class="p">}</span>
+</pre></div>
+</div>
+<ul class="simple">
+<li><p>Keyed by model name; <code class="docutils literal notranslate"><span class="pre">latest</span></code> names the version the plug-in offers by
+default; older versions remain resolvable for reproducibility, optionally
+marked <code class="docutils literal notranslate"><span class="pre">deprecated</span></code> with a reason.</p></li>
+<li><p>The embedded <code class="docutils literal notranslate"><span class="pre">sidecar</span></code> is a copy: the authoritative one is the file on
+Zenodo. The utility that adds a version to the catalog copies it in, so the
+two cannot drift by hand-editing unless someone edits the copy on purpose.</p></li>
+<li><p>The plug-in caches the catalog at <code class="docutils literal notranslate"><span class="pre">~/.seamm.d/xnn/catalog.json</span></code> with the
+HTTP ETag, refreshing at most once an hour when online and silently keeping
+the cached copy when not. A user can also point <code class="docutils literal notranslate"><span class="pre">catalog</span></code> in <code class="docutils literal notranslate"><span class="pre">xnn.ini</span></code> at
+a file or a different URL (a site mirror behind a firewall).</p></li>
+</ul>
+</section>
+<section id="resolution-and-caching">
+<h2>Resolution and caching<a class="headerlink" href="#resolution-and-caching" title="Link to this heading">#</a></h2>
+<p>Model directories keep today’s order (<code class="docutils literal notranslate"><span class="pre">personal:xnn</span></code>, <code class="docutils literal notranslate"><span class="pre">local:xnn</span></code>, extra
+directories), and the catalog is appended as a further, remote source. When a
+model chemistry <code class="docutils literal notranslate"><span class="pre">xnn:MLFF&#64;&lt;name&gt;</span></code> is used:</p>
+<ol class="arabic simple">
+<li><p>Look for <code class="docutils literal notranslate"><span class="pre">&lt;name&gt;.pt</span></code> in the model directories. If found, read its
+sidecar (if present) and use it. A checkpoint without a sidecar is still
+usable, reported as <em>unpublished/local</em>, and not citable.</p></li>
+<li><p>Otherwise look the name up in the catalog and <strong>download</strong> the <code class="docutils literal notranslate"><span class="pre">latest</span></code>
+version’s files and sidecar into <code class="docutils literal notranslate"><span class="pre">local:xnn</span></code> (machine-wide) – or
+<code class="docutils literal notranslate"><span class="pre">personal:xnn</span></code> if <code class="docutils literal notranslate"><span class="pre">local</span></code> is not writable – verifying the sha256.
+Downloading happens at run time, once; the job then proceeds as with a local
+file. Model Chemistry shows catalog-only models with a marker such as
+“(download)”.</p></li>
+<li><p>Report and cite: the output names the file used and its version DOI, and
+<code class="docutils literal notranslate"><span class="pre">self.references.cite</span></code> adds the model’s citations.</p></li>
+</ol>
+<p>Update policy: default <strong>use what is cached</strong>. When online and the catalog says
+a newer version exists, print a one-line notice; never swap under a running
+campaign. Explicit actions: <code class="docutils literal notranslate"><span class="pre">fetch</span> <span class="pre">--update</span></code> to take the newest, or pin a
+version in <code class="docutils literal notranslate"><span class="pre">xnn.ini</span></code> (<code class="docutils literal notranslate"><span class="pre">water_mace_les</span> <span class="pre">=</span> <span class="pre">2026.08.08</span></code>) for a study that must
+not move.</p>
+</section>
+<section id="utility-offline-and-secure-sites">
+<h2>Utility (offline and secure sites)<a class="headerlink" href="#utility-offline-and-secure-sites" title="Link to this heading">#</a></h2>
+<p>Subcommands of <code class="docutils literal notranslate"><span class="pre">xnn-step-installer</span></code> (or a <code class="docutils literal notranslate"><span class="pre">seamm-mlff</span></code> script if this
+becomes shared with other MLFF providers):</p>
+<ul class="simple">
+<li><p><code class="docutils literal notranslate"><span class="pre">models</span> <span class="pre">list</span> <span class="pre">[--catalog</span> <span class="pre">URL|FILE]</span></code> – what the catalog offers, with
+version, elements and whether it is cached.</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">models</span> <span class="pre">fetch</span> <span class="pre">&lt;name&gt;</span> <span class="pre">[--version</span> <span class="pre">V]</span> <span class="pre">[--to</span> <span class="pre">DIR]</span></code> – download checkpoint +
+sidecar, verify sha256. Run on a connected machine, copy the two files to the
+inside machine’s <code class="docutils literal notranslate"><span class="pre">local:xnn</span></code> or <code class="docutils literal notranslate"><span class="pre">personal:xnn</span></code>; nothing else is needed.</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">models</span> <span class="pre">check</span></code> – compare cached versions with the catalog.</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">models</span> <span class="pre">publish</span> <span class="pre">&lt;checkpoint&gt;</span> <span class="pre">--sidecar</span> <span class="pre">X.json</span> <span class="pre">[--sandbox]</span></code> – upload to
+Zenodo (via <code class="docutils literal notranslate"><span class="pre">seamm_util.Zenodo</span></code>, which already handles deposits, versions
+and publishing), then add the version to the catalog file for commit. Fills
+the derivable sidecar fields from the checkpoint.</p></li>
+</ul>
+</section>
+<section id="open-questions">
+<h2>Open questions<a class="headerlink" href="#open-questions" title="Link to this heading">#</a></h2>
+<ul class="simple">
+<li><p>Sina: what exactly does <code class="docutils literal notranslate"><span class="pre">cfg</span></code> expose (species list location, units
+assumptions), and would xnn write the sidecar at <code class="docutils literal notranslate"><span class="pre">Trainer.save</span></code>?</p></li>
+<li><p>Zenodo community for the models (<code class="docutils literal notranslate"><span class="pre">seamm</span></code> exists for flowcharts?) and the
+licence to standardise on.</p></li>
+<li><p>Whether the catalog repository should also carry the training-set records,
+or those stay per-model via <code class="docutils literal notranslate"><span class="pre">training.data_doi</span></code> only.</p></li>
+<li><p>Generalise now or later: the sidecar and catalog are engine-agnostic (only
+<code class="docutils literal notranslate"><span class="pre">engine.code</span></code> differs); a MACE-native or other provider could share them,
+which argues for the code living in a small shared package rather than in
+<code class="docutils literal notranslate"><span class="pre">xnn_step</span></code>.</p></li>
+</ul>
+</section>
+</section>
+
+
+                </article>
+              
+              
+              
+              
+              
+                <footer class="prev-next-footer d-print-none">
+                  
+<div class="prev-next-area">
+    <a class="left-prev"
+       href="index.html"
+       title="previous page">
+      <i class="fa-solid fa-angle-left"></i>
+      <div class="prev-next-info">
+        <p class="prev-next-subtitle">previous</p>
+        <p class="prev-next-title">2026-09-18 xnn plug-in and MLFF distribution</p>
+      </div>
+    </a>
+    <a class="right-next"
+       href="../../../api/index.html"
+       title="next page">
+      <div class="prev-next-info">
+        <p class="prev-next-subtitle">next</p>
+        <p class="prev-next-title">API Documentation</p>
+      </div>
+      <i class="fa-solid fa-angle-right"></i>
+    </a>
+</div>
+                </footer>
+              
+            </div>
+            
+            
+              
+                <dialog id="pst-secondary-sidebar-modal"></dialog>
+                <div id="pst-secondary-sidebar" class="bd-sidebar-secondary bd-toc"><div class="sidebar-secondary-items sidebar-secondary__inner">
+
+
+  <div class="sidebar-secondary-item">
+<div
+    id="pst-page-navigation-heading-2"
+    class="page-toc tocsection onthispage">
+    <i class="fa-solid fa-list"></i> On this page
+  </div>
+  <nav id="pst-page-toc-nav" class="page-toc" aria-labelledby="pst-page-navigation-heading-2">
+    <ul class="pst-show_toc_level nav section-nav flex-column">
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#why">Why</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#requirements-gathered-so-far">Requirements gathered so far</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#the-sidecar">The sidecar</a><ul class="pst-show_toc_level nav section-nav flex-column">
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#field-notes">Field notes</a></li>
+</ul>
+</li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#the-catalog">The catalog</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#resolution-and-caching">Resolution and caching</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#utility-offline-and-secure-sites">Utility (offline and secure sites)</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#open-questions">Open questions</a></li>
+</ul>
+  </nav></div>
+
+  <div class="sidebar-secondary-item">
+
+  <div class="tocsection sourcelink">
+    <a href="../../../_sources/developer_guide/campaigns/2026-09-18/mlff_distribution_scope.rst.txt">
+      <i class="fa-solid fa-file-lines"></i> Show Source
+    </a>
+  </div>
+</div>
+
+</div></div>
+              
+            
+          </div>
+          <footer class="bd-footer-content">
+            
+          </footer>
+        
+      </main>
+    </div>
+  </div>
+  
+  <!-- Scripts loaded after <body> so the DOM is not blocked -->
+  <script defer src="../../../_static/scripts/bootstrap.js?digest=cb8930eaaf36d9849b67"></script>
+<script defer src="../../../_static/scripts/pydata-sphinx-theme.js?digest=cb8930eaaf36d9849b67"></script>
+
+  <footer class="bd-footer">
+<div class="bd-footer__inner bd-page-width">
+  
+  
+  
+    <div class="footer-items__end">
+      
+        <div class="footer-item">
+<p class="theme-version">
+  <!-- # L10n: Setting the PST URL as an argument as this does not need to be localized -->
+  Built with the <a href="https://pydata-sphinx-theme.readthedocs.io/en/stable/index.html">PyData Sphinx Theme</a> 0.21.0.
+</p></div>
+      
+    </div>
+  
+</div>
+
+  </footer>
+  </body>
+</html>

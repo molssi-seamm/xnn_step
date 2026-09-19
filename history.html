@@ -8,7 +8,7 @@
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="viewport" content="width=device-width, initial-scale=1" />
 
-    <title>History &#8212; SEAMM xnn Plug-in 2026.9.19 documentation</title>
+    <title>History &#8212; SEAMM xnn Plug-in 2026.9.19.1 documentation</title>
   
   
   
@@ -41,7 +41,7 @@
   <link rel="preload" as="script" href="_static/scripts/bootstrap.js?digest=cb8930eaaf36d9849b67" />
 <link rel="preload" as="script" href="_static/scripts/pydata-sphinx-theme.js?digest=cb8930eaaf36d9849b67" />
 
-    <script src="_static/documentation_options.js?v=e8f1854e"></script>
+    <script src="_static/documentation_options.js?v=d2ca50ee"></script>
     <script src="_static/doctools.js?v=fd6eb6e6"></script>
     <script src="_static/sphinx_highlight.js?v=6ffebe34"></script>
     <script src="_static/clipboard.min.js?v=a7894cd8"></script>
@@ -54,7 +54,7 @@
     <link rel="prev" title="Development Team" href="authors.html" />
   <meta name="viewport" content="width=device-width, initial-scale=1"/>
   <meta name="docsearch:language" content="en"/>
-  <meta name="docsearch:version" content="2026.9.19" />
+  <meta name="docsearch:version" content="2026.9.19.1" />
   
     
     <script src="_static/searchtools.js"></script>
@@ -511,7 +511,26 @@
   <section id="history">
 <h1>History<a class="headerlink" href="#history" title="Link to this heading">#</a></h1>
 <section id="id1">
-<h2>2026.9.19 (2026-09-19)<a class="headerlink" href="#id1" title="Link to this heading">#</a></h2>
+<h2>2026.9.19.1 (2026-09-19)<a class="headerlink" href="#id1" title="Link to this heading">#</a></h2>
+<ul class="simple">
+<li><p>Bugfix: the <code class="docutils literal notranslate"><span class="pre">seamm-xnn</span></code> environment file no longer installs PyTorch with conda. On
+Linux conda-forge resolves <code class="docutils literal notranslate"><span class="pre">pytorch</span></code> to a CPU-only build, so updating an environment
+that held a pip CUDA build of PyTorch silently lost the GPU and broke every compiled
+extension built against it, such as <code class="docutils literal notranslate"><span class="pre">vesin-torch</span></code>. PyTorch now comes from pip, which
+leaves a suitable existing installation alone.</p></li>
+<li><p>Bugfix: <code class="docutils literal notranslate"><span class="pre">pymdi</span></code> now comes from conda-forge rather than pip. Only that build links the
+MDI library against MPI, which the <code class="docutils literal notranslate"><span class="pre">-method</span> <span class="pre">MPI</span></code> launch used for LAMMPS dynamics
+needs; with the PyPI build the engine stopped at “Error in MDI_Init: Failed to
+initialize MPI”.</p></li>
+<li><p>Bugfix: <code class="docutils literal notranslate"><span class="pre">xnn-step-installer</span></code> reported the xnn version as “unknown” because it looked
+for a distribution named <code class="docutils literal notranslate"><span class="pre">xnn</span></code>, though the code is published as <code class="docutils literal notranslate"><span class="pre">xnns</span></code>.</p></li>
+<li><p>Documented the two default model directories and their <code class="docutils literal notranslate"><span class="pre">personal:</span></code>/<code class="docutils literal notranslate"><span class="pre">local:</span></code>
+prefixes, the MPI launch path, and the effect of pointing <code class="docutils literal notranslate"><span class="pre">xnn.ini</span></code> at an
+environment shared with another code.</p></li>
+</ul>
+</section>
+<section id="id2">
+<h2>2026.9.19 (2026-09-19)<a class="headerlink" href="#id2" title="Link to this heading">#</a></h2>
 <ul class="simple">
 <li><p>Model directories in <code class="docutils literal notranslate"><span class="pre">xnn.ini</span></code> may be given as <code class="docutils literal notranslate"><span class="pre">personal:&lt;subdir&gt;</span></code>
 (<code class="docutils literal notranslate"><span class="pre">~/.seamm.d/data/Forcefields/&lt;subdir&gt;</span></code>) or <code class="docutils literal notranslate"><span class="pre">local:&lt;subdir&gt;</span></code>
@@ -522,8 +541,8 @@ shadowing a machine one of the same name. Each model’s source (e.g.
 <li><p>Installs xnn from PyPI as <code class="docutils literal notranslate"><span class="pre">xnns</span></code>; documents the Apple mps constraints.</p></li>
 </ul>
 </section>
-<section id="id2">
-<h2>2026.9.18 (2026-09-18)<a class="headerlink" href="#id2" title="Link to this heading">#</a></h2>
+<section id="id3">
+<h2>2026.9.18 (2026-09-18)<a class="headerlink" href="#id3" title="Link to this heading">#</a></h2>
 <ul class="simple">
 <li><p>Initial release. Provides xnn machine-learned force fields as <code class="docutils literal notranslate"><span class="pre">xnn:MLFF&#64;&lt;model&gt;</span></code>
 model chemistries (checkpoints discovered from the directories in <code class="docutils literal notranslate"><span class="pre">xnn.ini</span></code>) and
@@ -572,8 +591,9 @@ steps. Includes <code class="docutils literal notranslate"><span class="pre">xnn
   </div>
   <nav id="pst-page-toc-nav" class="page-toc" aria-labelledby="pst-page-navigation-heading-2">
     <ul class="pst-show_toc_level nav section-nav flex-column">
-<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#id1">2026.9.19 (2026-09-19)</a></li>
-<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#id2">2026.9.18 (2026-09-18)</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#id1">2026.9.19.1 (2026-09-19)</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#id2">2026.9.19 (2026-09-19)</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#id3">2026.9.18 (2026-09-18)</a></li>
 </ul>
   </nav></div>
 

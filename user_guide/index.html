@@ -8,7 +8,7 @@
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="viewport" content="width=device-width, initial-scale=1" />
 
-    <title>User Guide &#8212; SEAMM xnn Plug-in 2026.9.19 documentation</title>
+    <title>User Guide &#8212; SEAMM xnn Plug-in 2026.9.19.1 documentation</title>
   
   
   
@@ -41,7 +41,7 @@
   <link rel="preload" as="script" href="../_static/scripts/bootstrap.js?digest=cb8930eaaf36d9849b67" />
 <link rel="preload" as="script" href="../_static/scripts/pydata-sphinx-theme.js?digest=cb8930eaaf36d9849b67" />
 
-    <script src="../_static/documentation_options.js?v=e8f1854e"></script>
+    <script src="../_static/documentation_options.js?v=d2ca50ee"></script>
     <script src="../_static/doctools.js?v=fd6eb6e6"></script>
     <script src="../_static/sphinx_highlight.js?v=6ffebe34"></script>
     <script src="../_static/clipboard.min.js?v=a7894cd8"></script>
@@ -55,7 +55,7 @@
     <link rel="prev" title="Getting Started" href="../getting_started/index.html" />
   <meta name="viewport" content="width=device-width, initial-scale=1"/>
   <meta name="docsearch:language" content="en"/>
-  <meta name="docsearch:version" content="2026.9.19" />
+  <meta name="docsearch:version" content="2026.9.19.1" />
   
     
     <script src="../_static/searchtools.js"></script>
@@ -532,8 +532,12 @@ On Apple silicon <code class="docutils literal notranslate"><span class="pre">mp
 optional <code class="docutils literal notranslate"><span class="pre">vesin-torch</span></code> neighbor-list package, which insists on float64 (Apple’s
 GPU has none); for small molecules the CPU is as fast or faster anyway.</p>
 </dd>
-<dt><code class="docutils literal notranslate"><span class="pre">models</span></code></dt><dd><p>The directories searched for checkpoints, one per line. <code class="docutils literal notranslate"><span class="pre">{root}</span></code> expands to the
-SEAMM root (<code class="docutils literal notranslate"><span class="pre">~/SEAMM</span></code> unless <code class="docutils literal notranslate"><span class="pre">--root</span></code> was given).</p>
+<dt><code class="docutils literal notranslate"><span class="pre">models</span></code></dt><dd><p>The directories searched for checkpoints, one per line. An entry may be
+<code class="docutils literal notranslate"><span class="pre">personal:&lt;subdir&gt;</span></code> (<code class="docutils literal notranslate"><span class="pre">~/.seamm.d/data/Forcefields/&lt;subdir&gt;</span></code>),
+<code class="docutils literal notranslate"><span class="pre">local:&lt;subdir&gt;</span></code> (<code class="docutils literal notranslate"><span class="pre">~/SEAMM/data/Forcefields/&lt;subdir&gt;</span></code>), or a plain path in which
+<code class="docutils literal notranslate"><span class="pre">{root}</span></code> expands to the SEAMM root (<code class="docutils literal notranslate"><span class="pre">~/SEAMM</span></code> unless <code class="docutils literal notranslate"><span class="pre">--root</span></code> was given). The
+default is <code class="docutils literal notranslate"><span class="pre">personal:xnn</span></code> then <code class="docutils literal notranslate"><span class="pre">local:xnn</span></code>, a personal model shadowing a
+machine-wide one of the same name.</p>
 </dd>
 <dt><code class="docutils literal notranslate"><span class="pre">pattern</span></code></dt><dd><p>The glob for checkpoint files, <code class="docutils literal notranslate"><span class="pre">*.pt</span></code> by default.</p>
 </dd>
@@ -559,6 +563,11 @@ graph with the cell when one is sent and returns the stress.</p>
 <code class="docutils literal notranslate"><span class="pre">&lt;STRESS</span></code> for every geometry the driver sends (<code class="docutils literal notranslate"><span class="pre">&gt;COORDS</span></code>, and <code class="docutils literal notranslate"><span class="pre">&gt;CELL</span></code> for
 periodic systems), converting between MDI’s atomic units and the model’s eV/Å at the
 boundary.</p>
+<p>Steps that launch the engine and the driver together under <code class="docutils literal notranslate"><span class="pre">mpirun</span></code>, such as LAMMPS
+running dynamics on a GPU, use <code class="docutils literal notranslate"><span class="pre">-method</span> <span class="pre">MPI</span></code> in place of a TCP port. That path needs
+the MDI library itself to be linked against MPI, which is why the environment takes
+<code class="docutils literal notranslate"><span class="pre">pymdi</span></code> from conda-forge rather than PyPI. With the PyPI build the engine stops at
+<code class="docutils literal notranslate"><span class="pre">Error</span> <span class="pre">in</span> <span class="pre">MDI_Init:</span> <span class="pre">Failed</span> <span class="pre">to</span> <span class="pre">initialize</span> <span class="pre">MPI</span></code>.</p>
 <p>A model whose checkpoint was pickled by an older <code class="docutils literal notranslate"><span class="pre">xnns</span></code> release fails to load with
 <code class="docutils literal notranslate"><span class="pre">No</span> <span class="pre">module</span> <span class="pre">named</span> <span class="pre">'xnn'</span></code>; re-save it with the current xnn.</p>
 </section>

@@ -7,7 +7,7 @@
   <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>xnn_step.installer &#8212; SEAMM xnn Plug-in 2026.9.19 documentation</title>
+    <title>xnn_step.installer &#8212; SEAMM xnn Plug-in 2026.9.19.1 documentation</title>
   
   
   
@@ -40,7 +40,7 @@
   <link rel="preload" as="script" href="../../_static/scripts/bootstrap.js?digest=cb8930eaaf36d9849b67" />
 <link rel="preload" as="script" href="../../_static/scripts/pydata-sphinx-theme.js?digest=cb8930eaaf36d9849b67" />
 
-    <script src="../../_static/documentation_options.js?v=e8f1854e"></script>
+    <script src="../../_static/documentation_options.js?v=d2ca50ee"></script>
     <script src="../../_static/doctools.js?v=fd6eb6e6"></script>
     <script src="../../_static/sphinx_highlight.js?v=6ffebe34"></script>
     <script src="../../_static/clipboard.min.js?v=a7894cd8"></script>
@@ -52,7 +52,7 @@
     <link rel="search" title="Search" href="../../search.html" />
   <meta name="viewport" content="width=device-width, initial-scale=1"/>
   <meta name="docsearch:language" content="en"/>
-  <meta name="docsearch:version" content="2026.9.19" />
+  <meta name="docsearch:version" content="2026.9.19.1" />
   
     
     <script src="../../_static/searchtools.js"></script>
@@ -560,7 +560,14 @@
 <span class="sd">        """</span>
         <span class="n">environment</span> <span class="o">=</span> <span class="n">config</span><span class="p">[</span><span class="s2">"conda-environment"</span><span class="p">]</span>
         <span class="n">conda</span> <span class="o">=</span> <span class="n">config</span><span class="p">[</span><span class="s2">"conda"</span><span class="p">]</span>
-        <span class="n">script</span> <span class="o">=</span> <span class="s2">"from importlib.metadata import version; print(version('xnn'))"</span>
+        <span class="c1"># The code is distributed on PyPI as `xnns` (the name `xnn` is an orphaned</span>
+        <span class="c1"># project awaiting transfer) while the import name is `xnn`, so look for</span>
+        <span class="c1"># either distribution rather than assuming the import name.</span>
+        <span class="n">script</span> <span class="o">=</span> <span class="p">(</span>
+            <span class="s2">"import importlib.metadata as m; "</span>
+            <span class="s2">"d = {p.metadata['Name'].lower(): p.version for p in m.distributions()}; "</span>
+            <span class="s2">"print(d.get('xnns', d.get('xnn', 'unknown')))"</span>
+        <span class="p">)</span>
 
         <span class="k">if</span> <span class="n">environment</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">==</span> <span class="s2">"~"</span><span class="p">:</span>
             <span class="n">environment</span> <span class="o">=</span> <span class="nb">str</span><span class="p">(</span><span class="n">Path</span><span class="p">(</span><span class="n">environment</span><span class="p">)</span><span class="o">.</span><span class="n">expanduser</span><span class="p">())</span>

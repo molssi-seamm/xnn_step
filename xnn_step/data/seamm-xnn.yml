@@ -4,11 +4,19 @@ channels:
 dependencies:
   - python=3.12
   - pip
-  # PyTorch from conda-forge is the CPU build on macOS and a CUDA build on
-  # Linux where available; for a specific CUDA version install torch by hand
-  # into this environment following https://pytorch.org.
-  - pytorch
   - pip:
+    # PyTorch is installed with pip, deliberately NOT with conda. The
+    # conda-forge `pytorch` package resolves to the CPU-only `cpu_generic`
+    # build on Linux, and `conda env update` with this file will install it
+    # straight over a pip CUDA build of torch: the GPU silently disappears and
+    # every compiled extension built against the pip ABI (vesin-torch,
+    # cuequivariance, ...) stops loading with "undefined symbol". The pip
+    # wheels are CUDA-enabled on Linux and MPS-enabled on macOS, and pip
+    # leaves an existing torch alone if it already satisfies this requirement.
+    # For a specific CUDA version install torch by hand, following
+    # https://pytorch.org, e.g.
+    #     pip install torch --index-url https://download.pytorch.org/whl/cu126
+    - torch
     - pymdi          # provides `import mdi` for the MDI engine
     - e3nn==0.4.4    # for the equivariant models (MACE, NequIP, Allegro)
     # vesin-torch gives fast cell-list neighbor lists for large systems on cpu/cuda, but

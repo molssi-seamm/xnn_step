@@ -63,7 +63,14 @@ class Installer(seamm_installer.InstallerBase):
         """
         environment = config["conda-environment"]
         conda = config["conda"]
-        script = "from importlib.metadata import version; print(version('xnn'))"
+        # The code is distributed on PyPI as `xnns` (the name `xnn` is an orphaned
+        # project awaiting transfer) while the import name is `xnn`, so look for
+        # either distribution rather than assuming the import name.
+        script = (
+            "import importlib.metadata as m; "
+            "d = {p.metadata['Name'].lower(): p.version for p in m.distributions()}; "
+            "print(d.get('xnns', d.get('xnn', 'unknown')))"
+        )
 
         if environment[0] == "~":
             environment = str(Path(environment).expanduser())

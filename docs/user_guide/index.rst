@@ -29,8 +29,12 @@ per executor, normally just ``[local]``:
     optional ``vesin-torch`` neighbor-list package, which insists on float64 (Apple's
     GPU has none); for small molecules the CPU is as fast or faster anyway.
 ``models``
-    The directories searched for checkpoints, one per line. ``{root}`` expands to the
-    SEAMM root (``~/SEAMM`` unless ``--root`` was given).
+    The directories searched for checkpoints, one per line. An entry may be
+    ``personal:<subdir>`` (``~/.seamm.d/data/Forcefields/<subdir>``),
+    ``local:<subdir>`` (``~/SEAMM/data/Forcefields/<subdir>``), or a plain path in which
+    ``{root}`` expands to the SEAMM root (``~/SEAMM`` unless ``--root`` was given). The
+    default is ``personal:xnn`` then ``local:xnn``, a personal model shadowing a
+    machine-wide one of the same name.
 ``pattern``
     The glob for checkpoint files, ``*.pt`` by default.
 
@@ -55,6 +59,12 @@ The engine loads the model once and then answers ``<ENERGY``, ``<FORCES`` and
 ``<STRESS`` for every geometry the driver sends (``>COORDS``, and ``>CELL`` for
 periodic systems), converting between MDI's atomic units and the model's eV/Å at the
 boundary.
+
+Steps that launch the engine and the driver together under ``mpirun``, such as LAMMPS
+running dynamics on a GPU, use ``-method MPI`` in place of a TCP port. That path needs
+the MDI library itself to be linked against MPI, which is why the environment takes
+``pymdi`` from conda-forge rather than PyPI. With the PyPI build the engine stops at
+``Error in MDI_Init: Failed to initialize MPI``.
 
 A model whose checkpoint was pickled by an older ``xnns`` release fails to load with
 ``No module named 'xnn'``; re-save it with the current xnn.

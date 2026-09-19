@@ -4,6 +4,13 @@ channels:
 dependencies:
   - python=3.12
   - pip
+  # pymdi comes from conda-forge, deliberately NOT from pip. Only the
+  # conda-forge build links the MDI library against MPI, which the `-method
+  # MPI` launch used for LAMMPS QM-MD needs; the PyPI wheel bundles an
+  # MPI-stub build and MDI_Init then dies with "Failed to initialize MPI".
+  # conda-forge's package also ships no `.dist-info`, so pip cannot see it and
+  # a pip `pymdi` silently overwrites it in a shared environment.
+  - pymdi          # provides `import mdi` for the MDI engine
   - pip:
     # PyTorch is installed with pip, deliberately NOT with conda. The
     # conda-forge `pytorch` package resolves to the CPU-only `cpu_generic`
@@ -17,7 +24,6 @@ dependencies:
     # https://pytorch.org, e.g.
     #     pip install torch --index-url https://download.pytorch.org/whl/cu126
     - torch
-    - pymdi          # provides `import mdi` for the MDI engine
     - e3nn==0.4.4    # for the equivariant models (MACE, NequIP, Allegro)
     # vesin-torch gives fast cell-list neighbor lists for large systems on cpu/cuda, but
     # it forces float64 and so breaks Apple's mps device; add it yourself if wanted.

@@ -13,12 +13,12 @@ import logging
 from pathlib import Path
 import subprocess
 
-import seamm_installer
+import seamm_manager
 
 logger = logging.getLogger(__name__)
 
 
-class Installer(seamm_installer.InstallerBase):
+class Installer(seamm_manager.InstallerBase):
     """Handle further installation needed after installing xnn-step.
 
     The Python package `xnn-step` should already be installed, using `pip`,

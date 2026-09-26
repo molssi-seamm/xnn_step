@@ -1,6 +1,10 @@
 =======
 History
 =======
+2026.9.26 -- Internal: depend on seamm-manager rather than seamm-installer
+    * The plug-in's installer now builds on ``seamm-manager``, which replaces
+      ``seamm-installer`` for managing SEAMM installations. Nothing changes for users;
+      this only lets the two packages stop being installed side by side.
 
 2026.9.19.1 (2026-09-19)
 ------------------------

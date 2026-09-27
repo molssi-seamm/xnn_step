@@ -7,7 +7,7 @@
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="viewport" content="width=device-width, initial-scale=1" />
 
-    <title>xnn_step package &#8212; SEAMM xnn Plug-in 2026.9.27 documentation</title>
+    <title>xnn_step package &#8212; SEAMM xnn Plug-in 2026.9.27.1 documentation</title>
   
   
   
@@ -40,7 +40,7 @@
   <link rel="preload" as="script" href="../_static/scripts/bootstrap.js?digest=64cc4de3f052d77215f0" />
 <link rel="preload" as="script" href="../_static/scripts/pydata-sphinx-theme.js?digest=64cc4de3f052d77215f0" />
 
-    <script src="../_static/documentation_options.js?v=09c3d259"></script>
+    <script src="../_static/documentation_options.js?v=2246f11d"></script>
     <script src="../_static/doctools.js?v=fd6eb6e6"></script>
     <script src="../_static/sphinx_highlight.js?v=6ffebe34"></script>
     <script src="../_static/clipboard.min.js?v=a7894cd8"></script>
@@ -54,7 +54,7 @@
     <link rel="prev" title="xnn_step" href="modules.html" />
   <meta name="viewport" content="width=device-width, initial-scale=1"/>
   <meta name="docsearch:language" content="en"/>
-  <meta name="docsearch:version" content="2026.9.27" />
+  <meta name="docsearch:version" content="2026.9.27.1" />
   
     
     <script src="../_static/searchtools.js"></script>
@@ -1077,12 +1077,13 @@ characters replaced by <code class="docutils literal notranslate"><span class="p
 <span class="property"><span class="k"><span class="pre">classmethod</span></span><span class="w"> </span></span><span class="sig-name descname"><span class="pre">model_directories</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">config</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/xnn_step/xnn_step.html#XnnStep.model_directories"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#xnn_step.xnn_step.XnnStep.model_directories" title="Link to this definition">#</a></dt>
 <dd><p>The directories to search for checkpoints, from <code class="docutils literal notranslate"><span class="pre">models</span></code> in xnn.ini.</p>
 <p>Each line is a directory: an absolute or <code class="docutils literal notranslate"><span class="pre">~</span></code> path, <code class="docutils literal notranslate"><span class="pre">{root}/...</span></code> for
-the SEAMM root, or <code class="docutils literal notranslate"><span class="pre">personal:&lt;subdir&gt;</span></code> / <code class="docutils literal notranslate"><span class="pre">local:&lt;subdir&gt;</span></code> for
-<code class="docutils literal notranslate"><span class="pre">~/.seamm.d/data/Forcefields/&lt;subdir&gt;</span></code> / <code class="docutils literal notranslate"><span class="pre">~/SEAMM/data/Forcefields/&lt;subdir&gt;</span></code>
-(the same convention as the Forcefield step’s <code class="docutils literal notranslate"><span class="pre">personal:</span></code>/<code class="docutils literal notranslate"><span class="pre">local:</span></code>
-forcefield files). Returns <code class="docutils literal notranslate"><span class="pre">[(label_prefix,</span> <span class="pre">Path)]</span></code> in order; the
-label prefix (e.g. <code class="docutils literal notranslate"><span class="pre">personal:xnn/</span></code>) is what a model’s file is reported
-as.</p>
+the SEAMM root, or <code class="docutils literal notranslate"><span class="pre">personal:&lt;subdir&gt;</span></code> for
+<code class="docutils literal notranslate"><span class="pre">~/.seamm.d/data/Forcefields/&lt;subdir&gt;</span></code> and <code class="docutils literal notranslate"><span class="pre">local:&lt;subdir&gt;</span></code> for
+<code class="docutils literal notranslate"><span class="pre">&lt;root&gt;/data/Forcefields/&lt;subdir&gt;</span></code> then
+<code class="docutils literal notranslate"><span class="pre">~/SEAMM/data/Forcefields/&lt;subdir&gt;</span></code> (the same convention as the Forcefield
+step’s <code class="docutils literal notranslate"><span class="pre">personal:</span></code>/<code class="docutils literal notranslate"><span class="pre">local:</span></code> forcefield files). Returns
+<code class="docutils literal notranslate"><span class="pre">[(label_prefix,</span> <span class="pre">Path)]</span></code> in order; the label prefix (e.g.
+<code class="docutils literal notranslate"><span class="pre">personal:xnn/</span></code>) is what a model’s file is reported as.</p>
 </dd></dl>
 
 <dl class="py method">
@@ -1108,8 +1109,9 @@ the grammar-reserved characters replaced by <code class="docutils literal notran
 <dt class="sig sig-object py" id="xnn_step.xnn_step.XnnStep.seamm_root">
 <span class="property"><span class="k"><span class="pre">static</span></span><span class="w"> </span></span><span class="sig-name descname"><span class="pre">seamm_root</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="../_modules/xnn_step/xnn_step.html#XnnStep.seamm_root"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#xnn_step.xnn_step.XnnStep.seamm_root" title="Link to this definition">#</a></dt>
 <dd><p>The SEAMM root directory (<code class="docutils literal notranslate"><span class="pre">--root</span></code>), as a Path.</p>
-<p>Uses the parsed SEAMM options when available (inside a running flowchart
-or the editor), else <code class="docutils literal notranslate"><span class="pre">~/SEAMM</span></code>.</p>
+<p>The parsed <code class="docutils literal notranslate"><span class="pre">--root</span></code> when available (inside a running flowchart or the
+editor), else the installation this Python belongs to, <code class="docutils literal notranslate"><span class="pre">SEAMM_ROOT</span></code> or
+<code class="docutils literal notranslate"><span class="pre">~/SEAMM</span></code> – see <code class="docutils literal notranslate"><span class="pre">seamm_util.current_root</span></code>.</p>
 </dd></dl>
 
 <dl class="py method">

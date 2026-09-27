@@ -6,7 +6,7 @@
   <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>xnn_step.xnn_step &#8212; SEAMM xnn Plug-in 2026.9.27 documentation</title>
+    <title>xnn_step.xnn_step &#8212; SEAMM xnn Plug-in 2026.9.27.1 documentation</title>
   
   
   
@@ -39,7 +39,7 @@
   <link rel="preload" as="script" href="../../_static/scripts/bootstrap.js?digest=64cc4de3f052d77215f0" />
 <link rel="preload" as="script" href="../../_static/scripts/pydata-sphinx-theme.js?digest=64cc4de3f052d77215f0" />
 
-    <script src="../../_static/documentation_options.js?v=09c3d259"></script>
+    <script src="../../_static/documentation_options.js?v=2246f11d"></script>
     <script src="../../_static/doctools.js?v=fd6eb6e6"></script>
     <script src="../../_static/sphinx_highlight.js?v=6ffebe34"></script>
     <script src="../../_static/clipboard.min.js?v=a7894cd8"></script>
@@ -51,7 +51,7 @@
     <link rel="search" title="Search" href="../../search.html" />
   <meta name="viewport" content="width=device-width, initial-scale=1"/>
   <meta name="docsearch:language" content="en"/>
-  <meta name="docsearch:version" content="2026.9.27" />
+  <meta name="docsearch:version" content="2026.9.27.1" />
   
     
     <script src="../../_static/searchtools.js"></script>
@@ -617,6 +617,21 @@
         <span class="s2">"local"</span><span class="p">:</span> <span class="n">Path</span><span class="p">(</span><span class="s2">"~/SEAMM/data/Forcefields"</span><span class="p">),</span>
     <span class="p">}</span>
 
+    <span class="nd">@classmethod</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">_source_directories</span><span class="p">(</span><span class="bp">cls</span><span class="p">,</span> <span class="n">source</span><span class="p">,</span> <span class="n">root</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">"""The directories a ``personal:`` or ``local:`` source stands for.</span>
+
+<span class="sd">        ``local:`` is the SEAMM installation's ``&lt;root&gt;/data/Forcefields`` and then</span>
+<span class="sd">        the default installation's ``~/SEAMM/data/Forcefields``, so a second</span>
+<span class="sd">        installation such as ``~/SEAMM_DEV`` sees the default installation's models</span>
+<span class="sd">        and can add its own (the same order seamm uses for data files).</span>
+<span class="sd">        """</span>
+        <span class="n">base</span> <span class="o">=</span> <span class="bp">cls</span><span class="o">.</span><span class="n">_SOURCE_ROOTS</span><span class="p">[</span><span class="n">source</span><span class="p">]</span><span class="o">.</span><span class="n">expanduser</span><span class="p">()</span>
+        <span class="k">if</span> <span class="n">source</span> <span class="o">!=</span> <span class="s2">"local"</span><span class="p">:</span>
+            <span class="k">return</span> <span class="p">[</span><span class="n">base</span><span class="p">]</span>
+        <span class="n">own</span> <span class="o">=</span> <span class="n">Path</span><span class="p">(</span><span class="n">root</span><span class="p">)</span><span class="o">.</span><span class="n">expanduser</span><span class="p">()</span> <span class="o">/</span> <span class="s2">"data"</span> <span class="o">/</span> <span class="s2">"Forcefields"</span>
+        <span class="k">return</span> <span class="p">[</span><span class="n">own</span><span class="p">]</span> <span class="k">if</span> <span class="n">own</span> <span class="o">==</span> <span class="n">base</span> <span class="k">else</span> <span class="p">[</span><span class="n">own</span><span class="p">,</span> <span class="n">base</span><span class="p">]</span>
+
 <div class="viewcode-block" id="XnnStep.model_directories">
 <a class="viewcode-back" href="../../api/xnn_step.html#xnn_step.xnn_step.XnnStep.model_directories">[docs]</a>
     <span class="nd">@classmethod</span>
@@ -624,12 +639,13 @@
 <span class="w">        </span><span class="sd">"""The directories to search for checkpoints, from ``models`` in xnn.ini.</span>
 
 <span class="sd">        Each line is a directory: an absolute or ``~`` path, ``{root}/...`` for</span>
-<span class="sd">        the SEAMM root, or ``personal:&lt;subdir&gt;`` / ``local:&lt;subdir&gt;`` for</span>
-<span class="sd">        ``~/.seamm.d/data/Forcefields/&lt;subdir&gt;`` / ``~/SEAMM/data/Forcefields/&lt;subdir&gt;``</span>
-<span class="sd">        (the same convention as the Forcefield step's ``personal:``/``local:``</span>
-<span class="sd">        forcefield files). Returns ``[(label_prefix, Path)]`` in order; the</span>
-<span class="sd">        label prefix (e.g. ``personal:xnn/``) is what a model's file is reported</span>
-<span class="sd">        as.</span>
+<span class="sd">        the SEAMM root, or ``personal:&lt;subdir&gt;`` for</span>
+<span class="sd">        ``~/.seamm.d/data/Forcefields/&lt;subdir&gt;`` and ``local:&lt;subdir&gt;`` for</span>
+<span class="sd">        ``&lt;root&gt;/data/Forcefields/&lt;subdir&gt;`` then</span>
+<span class="sd">        ``~/SEAMM/data/Forcefields/&lt;subdir&gt;`` (the same convention as the Forcefield</span>
+<span class="sd">        step's ``personal:``/``local:`` forcefield files). Returns</span>
+<span class="sd">        ``[(label_prefix, Path)]`` in order; the label prefix (e.g.</span>
+<span class="sd">        ``personal:xnn/``) is what a model's file is reported as.</span>
 <span class="sd">        """</span>
         <span class="n">root</span> <span class="o">=</span> <span class="bp">cls</span><span class="o">.</span><span class="n">seamm_root</span><span class="p">()</span>
         <span class="n">result</span> <span class="o">=</span> <span class="p">[]</span>
@@ -637,17 +653,17 @@
             <span class="n">entry</span> <span class="o">=</span> <span class="n">line</span><span class="o">.</span><span class="n">strip</span><span class="p">()</span>
             <span class="k">if</span> <span class="n">entry</span> <span class="o">==</span> <span class="s2">""</span> <span class="ow">or</span> <span class="n">entry</span><span class="o">.</span><span class="n">startswith</span><span class="p">(</span><span class="s2">"#"</span><span class="p">):</span>
                 <span class="k">continue</span>
-            <span class="n">prefix</span> <span class="o">=</span> <span class="s2">""</span>
-            <span class="k">for</span> <span class="n">source</span><span class="p">,</span> <span class="n">base</span> <span class="ow">in</span> <span class="bp">cls</span><span class="o">.</span><span class="n">_SOURCE_ROOTS</span><span class="o">.</span><span class="n">items</span><span class="p">():</span>
+            <span class="k">for</span> <span class="n">source</span> <span class="ow">in</span> <span class="bp">cls</span><span class="o">.</span><span class="n">_SOURCE_ROOTS</span><span class="p">:</span>
                 <span class="n">tag</span> <span class="o">=</span> <span class="sa">f</span><span class="s2">"</span><span class="si">{</span><span class="n">source</span><span class="si">}</span><span class="s2">:"</span>
                 <span class="k">if</span> <span class="n">entry</span><span class="o">.</span><span class="n">startswith</span><span class="p">(</span><span class="n">tag</span><span class="p">):</span>
                     <span class="n">sub</span> <span class="o">=</span> <span class="n">entry</span><span class="p">[</span><span class="nb">len</span><span class="p">(</span><span class="n">tag</span><span class="p">)</span> <span class="p">:]</span><span class="o">.</span><span class="n">strip</span><span class="p">(</span><span class="s2">"/"</span><span class="p">)</span>
-                    <span class="n">directory</span> <span class="o">=</span> <span class="n">base</span><span class="o">.</span><span class="n">expanduser</span><span class="p">()</span> <span class="o">/</span> <span class="n">sub</span> <span class="k">if</span> <span class="n">sub</span> <span class="k">else</span> <span class="n">base</span><span class="o">.</span><span class="n">expanduser</span><span class="p">()</span>
                     <span class="n">prefix</span> <span class="o">=</span> <span class="sa">f</span><span class="s2">"</span><span class="si">{</span><span class="n">source</span><span class="si">}</span><span class="s2">:</span><span class="si">{</span><span class="n">sub</span><span class="si">}</span><span class="s2">/"</span> <span class="k">if</span> <span class="n">sub</span> <span class="k">else</span> <span class="sa">f</span><span class="s2">"</span><span class="si">{</span><span class="n">source</span><span class="si">}</span><span class="s2">:"</span>
+                    <span class="k">for</span> <span class="n">base</span> <span class="ow">in</span> <span class="bp">cls</span><span class="o">.</span><span class="n">_source_directories</span><span class="p">(</span><span class="n">source</span><span class="p">,</span> <span class="n">root</span><span class="p">):</span>
+                        <span class="n">result</span><span class="o">.</span><span class="n">append</span><span class="p">((</span><span class="n">prefix</span><span class="p">,</span> <span class="n">base</span> <span class="o">/</span> <span class="n">sub</span> <span class="k">if</span> <span class="n">sub</span> <span class="k">else</span> <span class="n">base</span><span class="p">))</span>
                     <span class="k">break</span>
             <span class="k">else</span><span class="p">:</span>
                 <span class="n">directory</span> <span class="o">=</span> <span class="n">Path</span><span class="p">(</span><span class="n">entry</span><span class="o">.</span><span class="n">replace</span><span class="p">(</span><span class="s2">"</span><span class="si">{root}</span><span class="s2">"</span><span class="p">,</span> <span class="nb">str</span><span class="p">(</span><span class="n">root</span><span class="p">)))</span><span class="o">.</span><span class="n">expanduser</span><span class="p">()</span>
-            <span class="n">result</span><span class="o">.</span><span class="n">append</span><span class="p">((</span><span class="n">prefix</span><span class="p">,</span> <span class="n">directory</span><span class="p">))</span>
+                <span class="n">result</span><span class="o">.</span><span class="n">append</span><span class="p">((</span><span class="s2">""</span><span class="p">,</span> <span class="n">directory</span><span class="p">))</span>
         <span class="k">return</span> <span class="n">result</span></div>
 
 
@@ -721,19 +737,13 @@
     <span class="k">def</span><span class="w"> </span><span class="nf">seamm_root</span><span class="p">():</span>
 <span class="w">        </span><span class="sd">"""The SEAMM root directory (``--root``), as a Path.</span>
 
-<span class="sd">        Uses the parsed SEAMM options when available (inside a running flowchart</span>
-<span class="sd">        or the editor), else ``~/SEAMM``.</span>
+<span class="sd">        The parsed ``--root`` when available (inside a running flowchart or the</span>
+<span class="sd">        editor), else the installation this Python belongs to, ``SEAMM_ROOT`` or</span>
+<span class="sd">        ``~/SEAMM`` -- see ``seamm_util.current_root``.</span>
 <span class="sd">        """</span>
-        <span class="n">root</span> <span class="o">=</span> <span class="kc">None</span>
-        <span class="k">try</span><span class="p">:</span>
-            <span class="kn">from</span><span class="w"> </span><span class="nn">seamm_util</span><span class="w"> </span><span class="kn">import</span> <span class="n">getParser</span>
+        <span class="kn">from</span><span class="w"> </span><span class="nn">seamm_util</span><span class="w"> </span><span class="kn">import</span> <span class="n">current_root</span>
 
-            <span class="n">root</span> <span class="o">=</span> <span class="n">getParser</span><span class="p">()</span><span class="o">.</span><span class="n">get_options</span><span class="p">(</span><span class="s2">"SEAMM"</span><span class="p">)</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">"root"</span><span class="p">,</span> <span class="kc">None</span><span class="p">)</span>
-        <span class="k">except</span> <span class="ne">Exception</span><span class="p">:</span>
-            <span class="n">root</span> <span class="o">=</span> <span class="kc">None</span>
-        <span class="k">if</span> <span class="n">root</span> <span class="ow">is</span> <span class="kc">None</span> <span class="ow">or</span> <span class="n">root</span> <span class="o">==</span> <span class="s2">""</span><span class="p">:</span>
-            <span class="n">root</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">environ</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">"SEAMM_ROOT"</span><span class="p">,</span> <span class="s2">"~/SEAMM"</span><span class="p">)</span>
-        <span class="k">return</span> <span class="n">Path</span><span class="p">(</span><span class="n">root</span><span class="p">)</span><span class="o">.</span><span class="n">expanduser</span><span class="p">()</span></div>
+        <span class="k">return</span> <span class="n">current_root</span><span class="p">()</span></div>
 
 
     <span class="nd">@classmethod</span>

@@ -1,6 +1,16 @@
 =======
 History
 =======
+2026.9.27 -- Bugfix: pin xnns below 0.2 so existing checkpoints load
+    * The environment now requires ``xnns<0.2``. The 0.2.1 and 0.3.0 releases on PyPI
+      added ``scale_shift`` buffers to the MACE model with no defaults for older state
+      dicts, so every existing checkpoint failed to load in the MDI engine ("Missing
+      key(s) in state_dict: model.model.scale_shift.scale/shift") and a LAMMPS run then
+      hung waiting for it. A fresh installation was getting 0.3.0.
+    * Updating does not downgrade an environment that already has a newer ``xnns``;
+      run ``pip install xnns==0.1.0`` in it by hand. The pin will move forward once an
+      xnns release loads the older checkpoints.
+
 2026.9.26 -- Internal: depend on seamm-manager rather than seamm-installer
     * The plug-in's installer now builds on ``seamm-manager``, which replaces
       ``seamm-installer`` for managing SEAMM installations. Nothing changes for users;

@@ -121,16 +121,32 @@ class XnnStep(object):
     }
 
     @classmethod
+    def _source_directories(cls, source, root):
+        """The directories a ``personal:`` or ``local:`` source stands for.
+
+        ``local:`` is the SEAMM installation's ``<root>/data/Forcefields`` and then
+        the default installation's ``~/SEAMM/data/Forcefields``, so a second
+        installation such as ``~/SEAMM_DEV`` sees the default installation's models
+        and can add its own (the same order seamm uses for data files).
+        """
+        base = cls._SOURCE_ROOTS[source].expanduser()
+        if source != "local":
+            return [base]
+        own = Path(root).expanduser() / "data" / "Forcefields"
+        return [own] if own == base else [own, base]
+
+    @classmethod
     def model_directories(cls, config):
         """The directories to search for checkpoints, from ``models`` in xnn.ini.
 
         Each line is a directory: an absolute or ``~`` path, ``{root}/...`` for
-        the SEAMM root, or ``personal:<subdir>`` / ``local:<subdir>`` for
-        ``~/.seamm.d/data/Forcefields/<subdir>`` / ``~/SEAMM/data/Forcefields/<subdir>``
-        (the same convention as the Forcefield step's ``personal:``/``local:``
-        forcefield files). Returns ``[(label_prefix, Path)]`` in order; the
-        label prefix (e.g. ``personal:xnn/``) is what a model's file is reported
-        as.
+        the SEAMM root, or ``personal:<subdir>`` for
+        ``~/.seamm.d/data/Forcefields/<subdir>`` and ``local:<subdir>`` for
+        ``<root>/data/Forcefields/<subdir>`` then
+        ``~/SEAMM/data/Forcefields/<subdir>`` (the same convention as the Forcefield
+        step's ``personal:``/``local:`` forcefield files). Returns
+        ``[(label_prefix, Path)]`` in order; the label prefix (e.g.
+        ``personal:xnn/``) is what a model's file is reported as.
         """
         root = cls.seamm_root()
         result = []
@@ -138,17 +154,17 @@ class XnnStep(object):
             entry = line.strip()
             if entry == "" or entry.startswith("#"):
                 continue
-            prefix = ""
-            for source, base in cls._SOURCE_ROOTS.items():
+            for source in cls._SOURCE_ROOTS:
                 tag = f"{source}:"
                 if entry.startswith(tag):
                     sub = entry[len(tag) :].strip("/")
-                    directory = base.expanduser() / sub if sub else base.expanduser()
                     prefix = f"{source}:{sub}/" if sub else f"{source}:"
+                    for base in cls._source_directories(source, root):
+                        result.append((prefix, base / sub if sub else base))
                     break
             else:
                 directory = Path(entry.replace("{root}", str(root))).expanduser()
-            result.append((prefix, directory))
+                result.append(("", directory))
         return result
 
     @classmethod
@@ -213,19 +229,13 @@ class XnnStep(object):
     def seamm_root():
         """The SEAMM root directory (``--root``), as a Path.
 
-        Uses the parsed SEAMM options when available (inside a running flowchart
-        or the editor), else ``~/SEAMM``.
+        The parsed ``--root`` when available (inside a running flowchart or the
+        editor), else the installation this Python belongs to, ``SEAMM_ROOT`` or
+        ``~/SEAMM`` -- see ``seamm_util.current_root``.
         """
-        root = None
-        try:
-            from seamm_util import getParser
+        from seamm_util import current_root
 
-            root = getParser().get_options("SEAMM").get("root", None)
-        except Exception:
-            root = None
-        if root is None or root == "":
-            root = os.environ.get("SEAMM_ROOT", "~/SEAMM")
-        return Path(root).expanduser()
+        return current_root()
 
     @classmethod
     def _ini_path(cls, root=None):

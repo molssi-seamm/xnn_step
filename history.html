@@ -7,7 +7,7 @@
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="viewport" content="width=device-width, initial-scale=1" />
 
-    <title>History &#8212; SEAMM xnn Plug-in 2026.9.26 documentation</title>
+    <title>History &#8212; SEAMM xnn Plug-in 2026.9.27 documentation</title>
   
   
   
@@ -40,7 +40,7 @@
   <link rel="preload" as="script" href="_static/scripts/bootstrap.js?digest=64cc4de3f052d77215f0" />
 <link rel="preload" as="script" href="_static/scripts/pydata-sphinx-theme.js?digest=64cc4de3f052d77215f0" />
 
-    <script src="_static/documentation_options.js?v=adbb5640"></script>
+    <script src="_static/documentation_options.js?v=09c3d259"></script>
     <script src="_static/doctools.js?v=fd6eb6e6"></script>
     <script src="_static/sphinx_highlight.js?v=6ffebe34"></script>
     <script src="_static/clipboard.min.js?v=a7894cd8"></script>
@@ -53,7 +53,7 @@
     <link rel="prev" title="Development Team" href="authors.html" />
   <meta name="viewport" content="width=device-width, initial-scale=1"/>
   <meta name="docsearch:language" content="en"/>
-  <meta name="docsearch:version" content="2026.9.26" />
+  <meta name="docsearch:version" content="2026.9.27" />
   
     
     <script src="_static/searchtools.js"></script>
@@ -510,6 +510,17 @@
   <section id="history">
 <h1>History<a class="headerlink" href="#history" title="Link to this heading">#</a></h1>
 <dl class="simple">
+<dt>2026.9.27 – Bugfix: pin xnns below 0.2 so existing checkpoints load</dt><dd><ul class="simple">
+<li><p>The environment now requires <code class="docutils literal notranslate"><span class="pre">xnns&lt;0.2</span></code>. The 0.2.1 and 0.3.0 releases on PyPI
+added <code class="docutils literal notranslate"><span class="pre">scale_shift</span></code> buffers to the MACE model with no defaults for older state
+dicts, so every existing checkpoint failed to load in the MDI engine (“Missing
+key(s) in state_dict: model.model.scale_shift.scale/shift”) and a LAMMPS run then
+hung waiting for it. A fresh installation was getting 0.3.0.</p></li>
+<li><p>Updating does not downgrade an environment that already has a newer <code class="docutils literal notranslate"><span class="pre">xnns</span></code>;
+run <code class="docutils literal notranslate"><span class="pre">pip</span> <span class="pre">install</span> <span class="pre">xnns==0.1.0</span></code> in it by hand. The pin will move forward once an
+xnns release loads the older checkpoints.</p></li>
+</ul>
+</dd>
 <dt>2026.9.26 – Internal: depend on seamm-manager rather than seamm-installer</dt><dd><ul class="simple">
 <li><p>The plug-in’s installer now builds on <code class="docutils literal notranslate"><span class="pre">seamm-manager</span></code>, which replaces
 <code class="docutils literal notranslate"><span class="pre">seamm-installer</span></code> for managing SEAMM installations. Nothing changes for users;

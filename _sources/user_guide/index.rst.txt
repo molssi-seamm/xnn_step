@@ -69,6 +69,16 @@ the MDI library itself to be linked against MPI, which is why the environment ta
 A model whose checkpoint was pickled by an older ``xnns`` release fails to load with
 ``No module named 'xnn'``; re-save it with the current xnn.
 
+The environment pins ``xnns<0.2``. The 0.2.1 and 0.3.0 releases added ``scale_shift``
+buffers to the MACE model without defaults for older state dicts, so every checkpoint
+trained before them fails in the engine with ``Missing key(s) in state_dict:
+"model.model.scale_shift.scale", "model.model.scale_shift.shift"``, and a LAMMPS driver
+then waits forever for the engine. An existing environment that already has a newer
+``xnns`` is not downgraded by an update; roll it back by hand with
+``pip install xnns==0.1.0`` in that environment (``seamm-xnn``, or ``seamm-lammps`` where
+``xnn.ini`` points there). The pin will move forward once a release loads the older
+checkpoints again.
+
 Indices and tables
 ==================
 

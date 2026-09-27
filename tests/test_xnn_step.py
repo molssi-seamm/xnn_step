@@ -77,6 +77,8 @@ def test_personal_and_local_sources(tmp_path, monkeypatch):
         "_SOURCE_ROOTS",
         {"personal": tmp_path / "personal", "local": tmp_path / "local"},
     )
+    # A root with no data of its own, so local: is just the default installation's
+    monkeypatch.setattr(XnnStep, "seamm_root", staticmethod(lambda: tmp_path / "root"))
     config = {"models": "personal:xnn\n    local:xnn\n", "pattern": "*.pt"}
     models, sources = XnnStep.available_models(config, with_sources=True)
     assert sorted(models) == ["mine", "shared", "site"]
@@ -215,3 +217,30 @@ def test_thread_count_from_seamm_ini(tmp_path, monkeypatch):
     assert XnnStep.thread_count() == 6
     ini.unlink()
     assert XnnStep.thread_count() is None
+
+
+def test_local_source_is_installation_then_default(tmp_path, monkeypatch):
+    """local: is <root>/data/Forcefields first, then ~/SEAMM/data/Forcefields."""
+    default = tmp_path / "SEAMM" / "data" / "Forcefields"
+    root = tmp_path / "SEAMM_DEV"
+    own = root / "data" / "Forcefields"
+    for d in (default / "xnn", own / "xnn"):
+        d.mkdir(parents=True)
+    (default / "xnn" / "shared.pt").write_bytes(b"d")
+    (default / "xnn" / "both.pt").write_bytes(b"d")
+    (own / "xnn" / "dev.pt").write_bytes(b"o")
+    (own / "xnn" / "both.pt").write_bytes(b"o")
+    monkeypatch.setattr(
+        XnnStep,
+        "_SOURCE_ROOTS",
+        {"personal": tmp_path / "personal", "local": default},
+    )
+    monkeypatch.setattr(XnnStep, "seamm_root", staticmethod(lambda: root))
+    config = {"models": "local:xnn\n", "pattern": "*.pt"}
+    assert [d for _, d in XnnStep.model_directories(config)] == [
+        own / "xnn",
+        default / "xnn",
+    ]
+    models = XnnStep.available_models(config)
+    assert sorted(models) == ["both", "dev", "shared"]
+    assert models["both"] == own / "xnn" / "both.pt"  # the installation's wins

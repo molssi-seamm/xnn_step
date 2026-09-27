@@ -1,6 +1,15 @@
 =======
 History
 =======
+2026.9.27.1 -- Local models can belong to the installation
+    * ``local:`` model directories in ``xnn.ini`` meant ``~/SEAMM/data/Forcefields``.
+      They now mean the ``data/Forcefields`` directory of the SEAMM installation in use,
+      then ``~/SEAMM/data/Forcefields``; a model in the installation's own directory
+      takes precedence. A second installation such as ``~/SEAMM_DEV`` therefore sees
+      the default installation's models and can add its own.
+    * The SEAMM root now comes from ``seamm_util.current_root()``, so an installation's
+      ``xnn.ini`` is found without ``--root``. Requires seamm-util 2026.9.27.1.
+
 2026.9.27 -- Bugfix: pin xnns below 0.2 so existing checkpoints load
     * The environment now requires ``xnns<0.2``. The 0.2.1 and 0.3.0 releases on PyPI
       added ``scale_shift`` buffers to the MACE model with no defaults for older state

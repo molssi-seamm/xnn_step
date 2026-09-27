@@ -30,5 +30,10 @@ dependencies:
     # - vesin-torch
     # The xnn code is published on PyPI under the name `xnns` (the name `xnn` is
     # an orphaned project awaiting transfer); the import name and the `xnn`
-    # command are unchanged.
-    - xnns
+    # command are unchanged. Releases 0.2.1 and 0.3.0 added `scale_shift`
+    # buffers to the MACE model with no defaults for older state dicts, so every
+    # checkpoint trained before them fails to load ("Missing key(s) in
+    # state_dict: model.model.scale_shift.scale/shift"). Stay on 0.1.x until a
+    # release provides the defaults; existing environments need
+    #     pip install xnns==0.1.0
+    - xnns<0.2

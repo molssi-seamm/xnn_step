@@ -7,7 +7,7 @@
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="viewport" content="width=device-width, initial-scale=1" />
 
-    <title>User Guide &#8212; SEAMM xnn Plug-in 2026.9.27.1 documentation</title>
+    <title>User Guide &#8212; SEAMM xnn Plug-in 2026.9.28 documentation</title>
   
   
   
@@ -40,7 +40,7 @@
   <link rel="preload" as="script" href="../_static/scripts/bootstrap.js?digest=64cc4de3f052d77215f0" />
 <link rel="preload" as="script" href="../_static/scripts/pydata-sphinx-theme.js?digest=64cc4de3f052d77215f0" />
 
-    <script src="../_static/documentation_options.js?v=2246f11d"></script>
+    <script src="../_static/documentation_options.js?v=e1d9719b"></script>
     <script src="../_static/doctools.js?v=fd6eb6e6"></script>
     <script src="../_static/sphinx_highlight.js?v=6ffebe34"></script>
     <script src="../_static/clipboard.min.js?v=a7894cd8"></script>
@@ -54,7 +54,7 @@
     <link rel="prev" title="Getting Started" href="../getting_started/index.html" />
   <meta name="viewport" content="width=device-width, initial-scale=1"/>
   <meta name="docsearch:language" content="en"/>
-  <meta name="docsearch:version" content="2026.9.27.1" />
+  <meta name="docsearch:version" content="2026.9.28" />
   
     
     <script src="../_static/searchtools.js"></script>
@@ -569,15 +569,14 @@ the MDI library itself to be linked against MPI, which is why the environment ta
 <code class="docutils literal notranslate"><span class="pre">Error</span> <span class="pre">in</span> <span class="pre">MDI_Init:</span> <span class="pre">Failed</span> <span class="pre">to</span> <span class="pre">initialize</span> <span class="pre">MPI</span></code>.</p>
 <p>A model whose checkpoint was pickled by an older <code class="docutils literal notranslate"><span class="pre">xnns</span></code> release fails to load with
 <code class="docutils literal notranslate"><span class="pre">No</span> <span class="pre">module</span> <span class="pre">named</span> <span class="pre">'xnn'</span></code>; re-save it with the current xnn.</p>
-<p>The environment pins <code class="docutils literal notranslate"><span class="pre">xnns&lt;0.2</span></code>. The 0.2.1 and 0.3.0 releases added <code class="docutils literal notranslate"><span class="pre">scale_shift</span></code>
-buffers to the MACE model without defaults for older state dicts, so every checkpoint
-trained before them fails in the engine with <code class="docutils literal notranslate"><span class="pre">Missing</span> <span class="pre">key(s)</span> <span class="pre">in</span> <span class="pre">state_dict:</span>
-<span class="pre">&quot;model.model.scale_shift.scale&quot;,</span> <span class="pre">&quot;model.model.scale_shift.shift&quot;</span></code>, and a LAMMPS driver
-then waits forever for the engine. An existing environment that already has a newer
-<code class="docutils literal notranslate"><span class="pre">xnns</span></code> is not downgraded by an update; roll it back by hand with
-<code class="docutils literal notranslate"><span class="pre">pip</span> <span class="pre">install</span> <span class="pre">xnns==0.1.0</span></code> in that environment (<code class="docutils literal notranslate"><span class="pre">seamm-xnn</span></code>, or <code class="docutils literal notranslate"><span class="pre">seamm-lammps</span></code> where
-<code class="docutils literal notranslate"><span class="pre">xnn.ini</span></code> points there). The pin will move forward once a release loads the older
-checkpoints again.</p>
+<p>The environment requires <code class="docutils literal notranslate"><span class="pre">xnns&gt;=0.4.0</span></code>. The 0.2.1 and 0.3.0 releases added
+<code class="docutils literal notranslate"><span class="pre">scale_shift</span></code> buffers to the MACE model without defaults for older state dicts, so every
+checkpoint trained before them failed in the engine with <code class="docutils literal notranslate"><span class="pre">Missing</span> <span class="pre">key(s)</span> <span class="pre">in</span> <span class="pre">state_dict:</span>
+<span class="pre">&quot;model.model.scale_shift.scale&quot;,</span> <span class="pre">&quot;model.model.scale_shift.shift&quot;</span></code> (and a LAMMPS driver
+then waited forever for the engine); 0.4.0 loads them again. Updating the plug-in moves
+an existing environment to 0.4.0 or later, including one rolled back to 0.1.0 by hand.
+xnns needs only <code class="docutils literal notranslate"><span class="pre">torch&gt;=2.0</span></code>, so a torch installed for the machine’s CUDA driver is left
+as it is.</p>
 </section>
 <section id="indices-and-tables">
 <h2>Indices and tables<a class="headerlink" href="#indices-and-tables" title="Link to this heading">#</a></h2>

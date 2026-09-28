@@ -1,6 +1,13 @@
 =======
 History
 =======
+2026.9.28 -- Require xnns 0.4.0, which loads the existing checkpoints
+    * The environment now requires ``xnns>=0.4.0`` instead of ``xnns<0.2``. xnns 0.4.0
+      loads the checkpoints that 0.2.1 and 0.3.0 could not, and its engine supports
+      ``--eeq-reuse``. Updating the plug-in moves an existing environment to it, including
+      one rolled back to 0.1.0 by hand; a torch built for the machine's CUDA driver is
+      kept, since xnns needs only torch 2.0 or later.
+
 2026.9.27.1 -- Local models can belong to the installation
     * ``local:`` model directories in ``xnn.ini`` meant ``~/SEAMM/data/Forcefields``.
       They now mean the ``data/Forcefields`` directory of the SEAMM installation in use,

@@ -17,6 +17,11 @@ from pathlib import Path
 import shutil
 
 import xnn_step
+from .checkpoint import (
+    describe_dispersion,
+    dispersion_settings,
+    read_checkpoint_config,
+)
 
 logger = logging.getLogger(__name__)
 
@@ -93,23 +98,55 @@ class XnnStep(object):
         dict
             Keyed by model name. Each entry carries ``model_chemistry``,
             ``type`` (``"MLFF"``), ``description``, ``periodic_native``,
-            ``periodic_mdi``, ``elements`` (unknown: ``""``), ``mdi_capable``,
-            ``mdi_method_arg`` (the model name) and ``path`` (the checkpoint).
+            ``periodic_mdi``, ``elements`` (the atomic numbers the model was
+            trained on, e.g. ``"1,8"``; ``""`` if unknown), ``mdi_capable``,
+            ``mdi_method_arg`` (the model name), ``path`` (the checkpoint),
+            ``family`` (e.g. ``"mace"``) and ``dispersion`` (``""``, or how
+            dispersion enters, e.g. ``"D4 in the model"``), the last three
+            read from the checkpoint's stored training configuration.
+
+        Notes
+        -----
+        A checkpoint trained with a dispersion wrapper on dispersion-subtracted
+        targets removes the dispersion twice; it is logged and not offered.
         """
         options = {}
         models, sources = cls.available_models(with_sources=True)
         for name, path in models.items():
+            cfg = read_checkpoint_config(path)
+            try:
+                in_model, subtracted = dispersion_settings(cfg)
+            except ValueError as e:
+                logger.warning(f"The xnn model '{name}' is not offered: {e}")
+                continue
+            model = (cfg or {}).get("model") or {}
+            family = str(model.get("name") or "")
+            species = (model.get("extra") or {}).get("species") or []
+            if in_model:
+                dispersion = f"{describe_dispersion(in_model)} in the model"
+            elif subtracted:
+                dispersion = f"{describe_dispersion(subtracted)} added by the engine"
+            else:
+                dispersion = ""
+            description = "xnn machine-learned force field"
+            if family:
+                description += f" ({family.upper()}"
+                if dispersion:
+                    description += f", {dispersion}"
+                description += ")"
             options[name] = {
                 "model_chemistry": f"xnn:MLFF@{name}",
                 "type": "MLFF",
-                "description": f"xnn machine-learned force field {sources[name]}",
+                "description": f"{description} {sources[name]}",
                 "source": sources[name],
                 "periodic_native": True,
                 "periodic_mdi": True,
-                "elements": "",
+                "elements": ",".join(str(int(z)) for z in species),
                 "mdi_capable": True,
                 "mdi_method_arg": name,
                 "path": str(path),
+                "family": family,
+                "dispersion": dispersion,
             }
         return options
 
@@ -367,14 +404,29 @@ class XnnStep(object):
             TCP port the engine dials; chosen by the driver.
         hostname : str
             Host the engine dials.
-        charge, multiplicity : int
-            Accepted for interface compatibility; an MLFF has no notion of them.
+        charge : int or float
+            The total charge of the system. When nonzero it is passed as
+            ``--total-charge``, which the D4 EEQ charges of a dispersion model
+            need (models without dispersion ignore it). Requires an ``xnn``
+            whose ``mdi`` command has that option.
+        multiplicity : int
+            Accepted for interface compatibility; an MLFF has no notion of it.
         n_atoms : int, optional
             Number of atoms (accepted for interface compatibility).
         engine_name : str
             The MDI ``-name`` for the engine (default "XNN").
         extra_args : list of str, optional
             Extra ``xnn mdi`` flags appended verbatim (e.g. ``--dtype float32``).
+
+        Notes
+        -----
+        The dispersion settings come from the checkpoint's stored training
+        configuration (see :mod:`xnn_step.checkpoint`). The engine adds the
+        dispersion by itself in both cases: a model trained with the dispersion
+        wrapper carries the term, and a model trained on dispersion-subtracted
+        targets records it as ``cfg.subtracted_dispersion``, which ``xnn mdi``
+        adds back. A model with both removes the dispersion twice and is
+        refused.
 
         Returns
         -------
@@ -392,6 +444,7 @@ class XnnStep(object):
                 f"{sorted(models)}. Check the 'models' directories in xnn.ini."
             )
         checkpoint = models[method]
+        dispersion_settings(read_checkpoint_config(checkpoint))  # refuse double removal
 
         installation = config.get("installation", "conda")
         code = config.get("code", "xnn").split()
@@ -420,9 +473,10 @@ class XnnStep(object):
             str(checkpoint),
             "--device",
             config.get("device", "cpu").strip() or "cpu",
-            "-mdi",
-            mdi_init,
         ]
+        if charge:
+            argv += ["--total-charge", f"{float(charge):g}"]
+        argv += ["-mdi", mdi_init]
         if extra_args:
             argv.extend(extra_args)
 

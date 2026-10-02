@@ -244,3 +244,224 @@ def test_local_source_is_installation_then_default(tmp_path, monkeypatch):
     models = XnnStep.available_models(config)
     assert sorted(models) == ["both", "dev", "shared"]
     assert models["both"] == own / "xnn" / "both.pt"  # the installation's wins
+
+
+# ---------------------------------------------------------------------------
+# The training configuration stored in a checkpoint, read without PyTorch
+# ---------------------------------------------------------------------------
+
+
+def _write_checkpoint(path, extra, name="mace", cutoff=6.0, subtracted=None):
+    """Write a file laid out like ``torch.save({"model": ..., "cfg": ...})``.
+
+    A zip archive with ``<archive>/data.pkl``: the state dict holds a tensor
+    rebuilt by ``torch._utils._rebuild_tensor_v2`` from a persistent storage
+    id, and ``cfg`` is a dataclass from a module the reader cannot import --
+    as in a real xnn checkpoint. PyTorch itself is not needed: a stand-in
+    ``torch._utils`` module is registered only while pickling.
+    """
+    import collections
+    import dataclasses
+    import io
+    import pickle
+    import sys
+    import types
+    import zipfile
+
+    @dataclasses.dataclass
+    class ModelConfig:
+        name: str
+        cutoff: float
+        extra: dict
+
+    @dataclasses.dataclass
+    class Config:
+        model: ModelConfig
+        seed: int = 0
+        subtracted_dispersion: object = None
+
+    for cls in (ModelConfig, Config):  # pickled by reference to this module
+        cls.__module__ = "xnn.common.config.schema"
+        cls.__qualname__ = cls.__name__
+
+    def _rebuild_tensor_v2(*args):
+        return None
+
+    class Storage:
+        pass
+
+    class Tensor:
+        def __reduce__(self):
+            return (_rebuild_tensor_v2, (Storage(), 0, (3,), (1,)))
+
+    fake = {
+        "torch": types.ModuleType("torch"),
+        "torch._utils": types.ModuleType("torch._utils"),
+        "xnn": types.ModuleType("xnn"),
+        "xnn.common": types.ModuleType("xnn.common"),
+        "xnn.common.config": types.ModuleType("xnn.common.config"),
+        "xnn.common.config.schema": types.ModuleType("xnn.common.config.schema"),
+    }
+    fake["torch._utils"]._rebuild_tensor_v2 = _rebuild_tensor_v2
+    _rebuild_tensor_v2.__module__ = "torch._utils"
+    _rebuild_tensor_v2.__qualname__ = "_rebuild_tensor_v2"
+    fake["xnn.common.config.schema"].ModelConfig = ModelConfig
+    fake["xnn.common.config.schema"].Config = Config
+
+    class Pickler(pickle.Pickler):
+        def persistent_id(self, obj):
+            if isinstance(obj, Storage):
+                return ("storage", "FloatStorage", "0", "cpu", 3)
+            return None
+
+    saved = {k: sys.modules.get(k) for k in fake}
+    sys.modules.update(fake)
+    try:
+        buffer = io.BytesIO()
+        state = collections.OrderedDict([("model.weight", Tensor())])
+        cfg = Config(ModelConfig(name, cutoff, extra), subtracted_dispersion=subtracted)
+        Pickler(buffer, protocol=2).dump({"model": state, "cfg": cfg})
+    finally:
+        for k, v in saved.items():
+            if v is None:
+                sys.modules.pop(k, None)
+            else:
+                sys.modules[k] = v
+    with zipfile.ZipFile(path, "w") as z:
+        z.writestr("best/data.pkl", buffer.getvalue())
+        z.writestr("best/byteorder", "little")
+        z.writestr("best/data/0", b"\0" * 12)
+    return path
+
+
+D4_B = {
+    "name": "d4",
+    "cutoff_pair": 12.0,
+    "switch_width_pair": 2.0,
+    "cutoff_triple": 10.0,
+    "tail_correction": True,
+}
+
+
+@pytest.fixture()
+def d4_models(tmp_path):
+    """Checkpoints for the three dispersion cases plus a double-removed one."""
+    d = tmp_path / "d4models"
+    d.mkdir()
+    les = {"n_channels": 4, "sigma": 1.0, "dl": 1.5}
+    _write_checkpoint(d / "plain.pt", {"species": [1, 8], "long_range": les})
+    _write_checkpoint(
+        d / "route_a.pt",
+        {"species": [1, 6, 8], "long_range": les, "dispersion": dict(D4_B)},
+    )
+    _write_checkpoint(
+        d / "route_b.pt",
+        {"species": [1, 3, 5, 9], "long_range": les},
+        subtracted=dict(D4_B),
+    )
+    _write_checkpoint(
+        d / "twice.pt", {"species": [1, 8], "dispersion": True}, subtracted=True
+    )
+    return d
+
+
+def test_read_checkpoint_config_without_torch(d4_models):
+    import importlib.util
+
+    from xnn_step.checkpoint import read_checkpoint_config
+
+    cfg = read_checkpoint_config(d4_models / "route_a.pt")
+    assert cfg["model"]["name"] == "mace"
+    assert cfg["model"]["cutoff"] == 6.0
+    assert cfg["model"]["extra"]["species"] == [1, 6, 8]
+    assert cfg["model"]["extra"]["dispersion"] == D4_B
+    assert cfg["seed"] == 0
+    if importlib.util.find_spec("torch") is None:
+        import sys
+
+        assert "torch" not in sys.modules  # nothing was imported to read it
+
+
+def test_read_checkpoint_config_tolerates_other_files(tmp_path):
+    from xnn_step.checkpoint import read_checkpoint_config
+
+    (tmp_path / "junk.pt").write_bytes(b"x")
+    assert read_checkpoint_config(tmp_path / "junk.pt") is None
+    assert read_checkpoint_config(tmp_path / "missing.pt") is None
+
+
+def test_dispersion_settings():
+    from xnn_step.checkpoint import dispersion_settings
+
+    assert dispersion_settings(None) == (None, None)
+    assert dispersion_settings({"model": {"extra": {}}}) == (None, None)
+    cfg = {"model": {"extra": {"dispersion": True}}}
+    assert dispersion_settings(cfg) == ({"name": "d4"}, None)
+    cfg = {"model": {"extra": {}}, "subtracted_dispersion": dict(D4_B)}
+    assert dispersion_settings(cfg) == (None, D4_B)
+    cfg = {"model": {"extra": {}}, "subtracted_dispersion": "D4"}
+    assert dispersion_settings(cfg) == (None, {"name": "d4"})
+    # the engine ignores a record under model.extra, so the plug-in does too
+    cfg = {"model": {"extra": {"subtracted_dispersion": dict(D4_B)}}}
+    assert dispersion_settings(cfg) == (None, None)
+    cfg = {"model": {"extra": {"dispersion": True}}, "subtracted_dispersion": True}
+    with pytest.raises(ValueError, match="removed twice"):
+        dispersion_settings(cfg)
+
+
+def test_model_chemistry_options_describe_the_checkpoint(d4_models, monkeypatch):
+    config = {"models": str(d4_models), "pattern": "*.pt"}
+    monkeypatch.setattr(XnnStep, "_local_config", classmethod(lambda cls: config))
+    options = XnnStep.get_model_chemistry_options()
+    # dispersion removed twice: not offered
+    assert set(options) == {"plain", "route_a", "route_b"}
+    assert options["plain"]["elements"] == "1,8"
+    assert options["plain"]["family"] == "mace"
+    assert options["plain"]["dispersion"] == ""
+    assert options["route_a"]["elements"] == "1,6,8"
+    assert options["route_a"]["dispersion"] == "D4, 12 Å + tail in the model"
+    assert options["route_b"]["dispersion"] == "D4, 12 Å + tail added by the engine"
+    assert "MACE, D4" in options["route_b"]["description"]
+
+
+def _command(root, method, charge=0):
+    return XnnStep.get_mdi_engine_command(
+        SimpleNamespace(name="local"),
+        {"root": str(root)},
+        method=method,
+        port=8021,
+        hostname="localhost",
+        charge=charge,
+    )
+
+
+@pytest.fixture()
+def d4_ini(tmp_path, d4_models, monkeypatch):
+    monkeypatch.setattr(XnnStep, "thread_count", classmethod(lambda cls: None))
+    root = tmp_path / "d4root"
+    root.mkdir()
+    (root / "xnn.ini").write_text(
+        "[local]\ninstallation = local\ncode = xnn\ndevice = cuda\n"
+        f"models = {d4_models}\n"
+    )
+    return root
+
+
+def test_engine_command_leaves_dispersion_to_the_engine(d4_ini):
+    """xnn mdi adds a recorded or built-in term itself; the plug-in passes nothing."""
+    for model in ("route_a", "route_b", "plain"):
+        assert "--dispersion" not in _command(d4_ini, model)
+
+
+def test_engine_command_passes_the_total_charge(d4_ini):
+    assert "--total-charge" not in _command(d4_ini, "plain", charge=0)
+    argv = _command(d4_ini, "plain", charge=-1)
+    assert argv[argv.index("--total-charge") + 1] == "-1"
+    argv = _command(d4_ini, "route_b", charge=1)
+    assert argv[argv.index("--total-charge") + 1] == "1"
+    assert argv.index("--total-charge") < argv.index("-mdi")
+
+
+def test_engine_command_refuses_a_double_removed_model(d4_ini):
+    with pytest.raises(ValueError, match="removed twice"):
+        _command(d4_ini, "twice")

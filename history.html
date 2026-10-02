@@ -7,7 +7,7 @@
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="viewport" content="width=device-width, initial-scale=1" />
 
-    <title>History &#8212; SEAMM xnn Plug-in 2026.9.28 documentation</title>
+    <title>History &#8212; SEAMM xnn Plug-in 2026.10.2 documentation</title>
   
   
   
@@ -40,7 +40,7 @@
   <link rel="preload" as="script" href="_static/scripts/bootstrap.js?digest=64cc4de3f052d77215f0" />
 <link rel="preload" as="script" href="_static/scripts/pydata-sphinx-theme.js?digest=64cc4de3f052d77215f0" />
 
-    <script src="_static/documentation_options.js?v=e1d9719b"></script>
+    <script src="_static/documentation_options.js?v=52372788"></script>
     <script src="_static/doctools.js?v=fd6eb6e6"></script>
     <script src="_static/sphinx_highlight.js?v=6ffebe34"></script>
     <script src="_static/clipboard.min.js?v=a7894cd8"></script>
@@ -53,7 +53,7 @@
     <link rel="prev" title="Development Team" href="authors.html" />
   <meta name="viewport" content="width=device-width, initial-scale=1"/>
   <meta name="docsearch:language" content="en"/>
-  <meta name="docsearch:version" content="2026.9.28" />
+  <meta name="docsearch:version" content="2026.10.2" />
   
     
     <script src="_static/searchtools.js"></script>
@@ -510,6 +510,21 @@
   <section id="history">
 <h1>History<a class="headerlink" href="#history" title="Link to this heading">#</a></h1>
 <dl class="simple">
+<dt>2026.10.2 – Show what each model is, and pass the charge for D4 models</dt><dd><ul class="simple">
+<li><p>The Model Chemistry step now describes each xnn model: its family (e.g. MACE), the
+elements it was trained on, and how dispersion enters it, e.g. “D4, 12 Å + tail
+added by the engine”. The plug-in reads this from the training configuration
+stored in the checkpoint, without PyTorch and without executing anything in the
+file.</p></li>
+<li><p>Models trained on dispersion-subtracted labels, which record the subtracted term
+as <code class="docutils literal notranslate"><span class="pre">subtracted_dispersion</span></code> in their training configuration, are recognized; the
+<code class="docutils literal notranslate"><span class="pre">xnn</span> <span class="pre">mdi</span></code> engine adds the term back by itself. A model that records the term
+and also carries a dispersion wrapper would count the dispersion twice. It is no
+longer offered, and asking for it by name is an error.</p></li>
+<li><p>For a charged configuration the total charge is now passed to the engine as
+<code class="docutils literal notranslate"><span class="pre">--total-charge</span></code>. D4 dispersion needs it for its EEQ partial charges.</p></li>
+</ul>
+</dd>
 <dt>2026.9.28 – Require xnns 0.4.0, which loads the existing checkpoints</dt><dd><ul class="simple">
 <li><p>The environment now requires <code class="docutils literal notranslate"><span class="pre">xnns&gt;=0.4.0</span></code> instead of <code class="docutils literal notranslate"><span class="pre">xnns&lt;0.2</span></code>. xnns 0.4.0
 loads the checkpoints that 0.2.1 and 0.3.0 could not, and its engine supports

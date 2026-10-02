@@ -4,6 +4,14 @@ xnn\_step package
 Submodules
 ----------
 
+xnn\_step.checkpoint module
+---------------------------
+
+.. automodule:: xnn_step.checkpoint
+   :members:
+   :show-inheritance:
+   :undoc-members:
+
 xnn\_step.installer module
 --------------------------
 

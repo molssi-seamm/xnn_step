@@ -7,7 +7,7 @@
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="viewport" content="width=device-width, initial-scale=1" />
 
-    <title>User Guide &#8212; SEAMM xnn Plug-in 2026.9.28 documentation</title>
+    <title>User Guide &#8212; SEAMM xnn Plug-in 2026.10.2 documentation</title>
   
   
   
@@ -40,7 +40,7 @@
   <link rel="preload" as="script" href="../_static/scripts/bootstrap.js?digest=64cc4de3f052d77215f0" />
 <link rel="preload" as="script" href="../_static/scripts/pydata-sphinx-theme.js?digest=64cc4de3f052d77215f0" />
 
-    <script src="../_static/documentation_options.js?v=e1d9719b"></script>
+    <script src="../_static/documentation_options.js?v=52372788"></script>
     <script src="../_static/doctools.js?v=fd6eb6e6"></script>
     <script src="../_static/sphinx_highlight.js?v=6ffebe34"></script>
     <script src="../_static/clipboard.min.js?v=a7894cd8"></script>
@@ -54,7 +54,7 @@
     <link rel="prev" title="Getting Started" href="../getting_started/index.html" />
   <meta name="viewport" content="width=device-width, initial-scale=1"/>
   <meta name="docsearch:language" content="en"/>
-  <meta name="docsearch:version" content="2026.9.28" />
+  <meta name="docsearch:version" content="2026.10.2" />
   
     
     <script src="../_static/searchtools.js"></script>
@@ -578,6 +578,32 @@ an existing environment to 0.4.0 or later, including one rolled back to 0.1.0 by
 xnns needs only <code class="docutils literal notranslate"><span class="pre">torch&gt;=2.0</span></code>, so a torch installed for the machine’s CUDA driver is left
 as it is.</p>
 </section>
+<section id="dispersion-and-charge">
+<h2>Dispersion and charge<a class="headerlink" href="#dispersion-and-charge" title="Link to this heading">#</a></h2>
+<p>The plug-in reads the training configuration stored in each checkpoint. It does this
+without PyTorch: the configuration is recovered from the checkpoint’s pickle with every
+class replaced by an inert stand-in, so nothing in the file is executed. From it the
+Model Chemistry step is told the model family, the elements the model was trained on,
+and how dispersion enters the model. Dispersion can enter in one of two ways, recorded in
+the training configuration:</p>
+<dl class="simple">
+<dt><code class="docutils literal notranslate"><span class="pre">model.extra[&quot;dispersion&quot;]</span></code></dt><dd><p>The model was trained with xnn’s D3/D4 wrapper, so the checkpoint carries the term.</p>
+</dd>
+<dt><code class="docutils literal notranslate"><span class="pre">subtracted_dispersion</span></code> (top level)</dt><dd><p>The model was trained without the wrapper, on energies and forces from which this
+dispersion term was subtracted. <code class="docutils literal notranslate"><span class="pre">xnn</span> <span class="pre">mdi</span></code> adds the identical term back, using the
+recorded settings, for example <code class="docutils literal notranslate"><span class="pre">{name:</span> <span class="pre">d4,</span> <span class="pre">cutoff_pair:</span> <span class="pre">12.0,</span> <span class="pre">switch_width_pair:</span>
+<span class="pre">2.0,</span> <span class="pre">cutoff_triple:</span> <span class="pre">8.0,</span> <span class="pre">tail_correction:</span> <span class="pre">true}</span></code>.</p>
+</dd>
+</dl>
+<p>In both cases the engine adds the dispersion by itself and the plug-in passes nothing;
+the Model Chemistry step shows which applies, e.g. “D4, 12 Å + tail added by the engine”.
+A checkpoint with both was trained with the wrapper on dispersion-subtracted targets,
+which removes the dispersion twice. It is not offered as a model chemistry, and asking
+for it by name is an error.</p>
+<p>The D4 dispersion depends on the total charge of the system through its EEQ partial
+charges. For a charged configuration the plug-in passes the charge to the engine as
+<code class="docutils literal notranslate"><span class="pre">--total-charge</span></code>.</p>
+</section>
 <section id="indices-and-tables">
 <h2>Indices and tables<a class="headerlink" href="#indices-and-tables" title="Link to this heading">#</a></h2>
 <ul class="simple">
@@ -637,6 +663,7 @@ as it is.</p>
 <li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#xnn-ini">xnn.ini</a></li>
 <li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#model-chemistries">Model chemistries</a></li>
 <li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#the-mdi-engine">The MDI engine</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#dispersion-and-charge">Dispersion and charge</a></li>
 <li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#indices-and-tables">Indices and tables</a></li>
 </ul>
   </nav></div>

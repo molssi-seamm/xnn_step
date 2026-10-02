@@ -7,7 +7,7 @@
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="viewport" content="width=device-width, initial-scale=1" />
 
-    <title>xnn_step package &#8212; SEAMM xnn Plug-in 2026.9.28 documentation</title>
+    <title>xnn_step package &#8212; SEAMM xnn Plug-in 2026.10.2 documentation</title>
   
   
   
@@ -40,7 +40,7 @@
   <link rel="preload" as="script" href="../_static/scripts/bootstrap.js?digest=64cc4de3f052d77215f0" />
 <link rel="preload" as="script" href="../_static/scripts/pydata-sphinx-theme.js?digest=64cc4de3f052d77215f0" />
 
-    <script src="../_static/documentation_options.js?v=e1d9719b"></script>
+    <script src="../_static/documentation_options.js?v=52372788"></script>
     <script src="../_static/doctools.js?v=fd6eb6e6"></script>
     <script src="../_static/sphinx_highlight.js?v=6ffebe34"></script>
     <script src="../_static/clipboard.min.js?v=a7894cd8"></script>
@@ -54,7 +54,7 @@
     <link rel="prev" title="xnn_step" href="modules.html" />
   <meta name="viewport" content="width=device-width, initial-scale=1"/>
   <meta name="docsearch:language" content="en"/>
-  <meta name="docsearch:version" content="2026.9.28" />
+  <meta name="docsearch:version" content="2026.10.2" />
   
     
     <script src="../_static/searchtools.js"></script>
@@ -524,6 +524,101 @@
 <h1>xnn_step package<a class="headerlink" href="#xnn-step-package" title="Link to this heading">#</a></h1>
 <section id="submodules">
 <h2>Submodules<a class="headerlink" href="#submodules" title="Link to this heading">#</a></h2>
+</section>
+<section id="module-xnn_step.checkpoint">
+<span id="xnn-step-checkpoint-module"></span><h2>xnn_step.checkpoint module<a class="headerlink" href="#module-xnn_step.checkpoint" title="Link to this heading">#</a></h2>
+<p>Read the training configuration stored in an xnn checkpoint, without PyTorch.</p>
+<p>An xnn checkpoint is what <code class="docutils literal notranslate"><span class="pre">Trainer.save</span></code> writes with <code class="docutils literal notranslate"><span class="pre">torch.save</span></code>:
+<code class="docutils literal notranslate"><span class="pre">{&quot;model&quot;:</span> <span class="pre">state_dict,</span> <span class="pre">&quot;cfg&quot;:</span> <span class="pre">Config}</span></code>. On disk that is a zip archive whose
+<code class="docutils literal notranslate"><span class="pre">&lt;archive&gt;/data.pkl</span></code> is a pickle of the dictionary, with every tensor stored
+separately and referenced by a persistent id. The configuration is ordinary
+Python data (dataclasses holding numbers, strings, lists and dicts), so it can
+be recovered with a restricted unpickler:</p>
+<ul class="simple">
+<li><p>every class the pickle names (<code class="docutils literal notranslate"><span class="pre">xnn...Config</span></code>, <code class="docutils literal notranslate"><span class="pre">torch.dtype</span></code>, …) is
+replaced by an inert stand-in that just records its state, so nothing from
+the file is executed – unlike <code class="docutils literal notranslate"><span class="pre">torch.load(weights_only=False)</span></code>;</p></li>
+<li><p>tensor storages are never read (persistent ids resolve to <code class="docutils literal notranslate"><span class="pre">None</span></code>).</p></li>
+</ul>
+<p>This lets the SEAMM side, which has no PyTorch, see what a model is: its family,
+cutoff and elements, and how dispersion enters it.</p>
+<p>Dispersion conventions (see <a class="reference internal" href="#xnn_step.checkpoint.dispersion_settings" title="xnn_step.checkpoint.dispersion_settings"><code class="xref py py-func docutils literal notranslate"><span class="pre">dispersion_settings()</span></code></a>):</p>
+<dl class="simple">
+<dt><code class="docutils literal notranslate"><span class="pre">cfg.model.extra[&quot;dispersion&quot;]</span></code></dt><dd><p>The model was trained with the D3/D4 wrapper, so the checkpoint carries the
+term and the <code class="docutils literal notranslate"><span class="pre">xnn</span> <span class="pre">mdi</span></code> engine adds it by itself (route A).</p>
+</dd>
+<dt><code class="docutils literal notranslate"><span class="pre">cfg.subtracted_dispersion</span></code></dt><dd><p>The model was trained <em>without</em> the wrapper, on targets from which this
+dispersion term was subtracted (route B). The record is top-level in the
+configuration, and <code class="docutils literal notranslate"><span class="pre">xnn</span> <span class="pre">mdi</span></code> (xnns 0.4.0 and later) adds the identical
+term back by itself, so here too the plug-in passes nothing. The value is a
+mapping of the term’s options with <code class="docutils literal notranslate"><span class="pre">name</span></code> set, a bare name such as
+<code class="docutils literal notranslate"><span class="pre">&quot;d4&quot;</span></code>, or <code class="docutils literal notranslate"><span class="pre">True</span></code> for the D4 defaults.</p>
+</dd>
+</dl>
+<dl class="py data">
+<dt class="sig sig-object py" id="xnn_step.checkpoint.IN_MODEL_KEY">
+<span class="sig-prename descclassname"><span class="pre">xnn_step.checkpoint.</span></span><span class="sig-name descname"><span class="pre">IN_MODEL_KEY</span></span><span class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">'dispersion'</span></span><a class="headerlink" href="#xnn_step.checkpoint.IN_MODEL_KEY" title="Link to this definition">#</a></dt>
+<dd><p>The <code class="docutils literal notranslate"><span class="pre">cfg.model.extra</span></code> key of a dispersion term carried by the model (route A).</p>
+</dd></dl>
+
+<dl class="py data">
+<dt class="sig sig-object py" id="xnn_step.checkpoint.SUBTRACTED_KEY">
+<span class="sig-prename descclassname"><span class="pre">xnn_step.checkpoint.</span></span><span class="sig-name descname"><span class="pre">SUBTRACTED_KEY</span></span><span class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">'subtracted_dispersion'</span></span><a class="headerlink" href="#xnn_step.checkpoint.SUBTRACTED_KEY" title="Link to this definition">#</a></dt>
+<dd><p>The top-level <code class="docutils literal notranslate"><span class="pre">cfg</span></code> key recording the dispersion term subtracted from the
+training targets, which the engine adds back (route B).</p>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="xnn_step.checkpoint.describe_dispersion">
+<span class="sig-prename descclassname"><span class="pre">xnn_step.checkpoint.</span></span><span class="sig-name descname"><span class="pre">describe_dispersion</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">spec</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/xnn_step/checkpoint.html#describe_dispersion"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#xnn_step.checkpoint.describe_dispersion" title="Link to this definition">#</a></dt>
+<dd><p>A short label for a dispersion mapping, e.g. <code class="docutils literal notranslate"><span class="pre">D4</span></code> or <code class="docutils literal notranslate"><span class="pre">D4,</span> <span class="pre">12</span> <span class="pre">Å</span></code>.</p>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="xnn_step.checkpoint.dispersion_settings">
+<span class="sig-prename descclassname"><span class="pre">xnn_step.checkpoint.</span></span><span class="sig-name descname"><span class="pre">dispersion_settings</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">cfg</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/xnn_step/checkpoint.html#dispersion_settings"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#xnn_step.checkpoint.dispersion_settings" title="Link to this definition">#</a></dt>
+<dd><p>How dispersion enters a model, from its stored configuration.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>cfg</strong> (<em>dict</em><em> or </em><em>None</em>) – As returned by <a class="reference internal" href="#xnn_step.checkpoint.read_checkpoint_config" title="xnn_step.checkpoint.read_checkpoint_config"><code class="xref py py-func docutils literal notranslate"><span class="pre">read_checkpoint_config()</span></code></a>.</p>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p><code class="docutils literal notranslate"><span class="pre">(in_model,</span> <span class="pre">subtracted)</span></code>: the dispersion term the checkpoint carries,
+and the term subtracted from the training targets. The engine adds
+either by itself. <code class="docutils literal notranslate"><span class="pre">True</span></code> is normalized to <code class="docutils literal notranslate"><span class="pre">{&quot;name&quot;:</span> <span class="pre">&quot;d4&quot;}</span></code>, the
+PBE0-D4 defaults, and a bare name <code class="docutils literal notranslate"><span class="pre">&quot;d3&quot;</span></code>/<code class="docutils literal notranslate"><span class="pre">&quot;d4&quot;</span></code> to <code class="docutils literal notranslate"><span class="pre">{&quot;name&quot;:</span> <span class="pre">...}</span></code>.</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>(dict or None, dict or None)</p>
+</dd>
+<dt class="field-even">Raises<span class="colon">:</span></dt>
+<dd class="field-even"><p><strong>ValueError</strong> – If the configuration has both: the model was then trained with the
+    wrapper on dispersion-subtracted targets, which removes the dispersion
+    twice, and no run-time setting can correct it.</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="xnn_step.checkpoint.read_checkpoint_config">
+<span class="sig-prename descclassname"><span class="pre">xnn_step.checkpoint.</span></span><span class="sig-name descname"><span class="pre">read_checkpoint_config</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">path</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/xnn_step/checkpoint.html#read_checkpoint_config"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#xnn_step.checkpoint.read_checkpoint_config" title="Link to this definition">#</a></dt>
+<dd><p>The training configuration stored in an xnn checkpoint, as plain data.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>path</strong> (<em>str</em><em> or </em><em>pathlib.Path</em>) – The checkpoint (<code class="docutils literal notranslate"><span class="pre">.pt</span></code>) file.</p>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>The <code class="docutils literal notranslate"><span class="pre">Config</span></code> as nested dicts (<code class="docutils literal notranslate"><span class="pre">cfg[&quot;model&quot;][&quot;extra&quot;]</span></code> etc.), or
+<code class="docutils literal notranslate"><span class="pre">None</span></code> if the file cannot be read as a trainer checkpoint (the reason
+is logged). Results are cached per file path, size and modification
+time.</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>dict or None</p>
+</dd>
+</dl>
+</dd></dl>
+
 </section>
 <section id="module-xnn_step.installer">
 <span id="xnn-step-installer-module"></span><h2>xnn_step.installer module<a class="headerlink" href="#module-xnn_step.installer" title="Link to this heading">#</a></h2>
@@ -1027,20 +1122,33 @@ arrive over the MDI handshake from the driver.</p>
 <li><p><strong>method</strong> (<em>str</em>) – The model name, as advertised by <code class="docutils literal notranslate"><span class="pre">get_model_chemistry_options</span></code>.</p></li>
 <li><p><strong>port</strong> (<em>int</em>) – TCP port the engine dials; chosen by the driver.</p></li>
 <li><p><strong>hostname</strong> (<em>str</em>) – Host the engine dials.</p></li>
-<li><p><strong>charge</strong> (<em>int</em>) – Accepted for interface compatibility; an MLFF has no notion of them.</p></li>
-<li><p><strong>multiplicity</strong> (<em>int</em>) – Accepted for interface compatibility; an MLFF has no notion of them.</p></li>
+<li><p><strong>charge</strong> (<em>int</em><em> or </em><em>float</em>) – The total charge of the system. When nonzero it is passed as
+<code class="docutils literal notranslate"><span class="pre">--total-charge</span></code>, which the D4 EEQ charges of a dispersion model
+need (models without dispersion ignore it). Requires an <code class="docutils literal notranslate"><span class="pre">xnn</span></code>
+whose <code class="docutils literal notranslate"><span class="pre">mdi</span></code> command has that option.</p></li>
+<li><p><strong>multiplicity</strong> (<em>int</em>) – Accepted for interface compatibility; an MLFF has no notion of it.</p></li>
 <li><p><strong>n_atoms</strong> (<em>int</em><em>, </em><em>optional</em>) – Number of atoms (accepted for interface compatibility).</p></li>
 <li><p><strong>engine_name</strong> (<em>str</em>) – The MDI <code class="docutils literal notranslate"><span class="pre">-name</span></code> for the engine (default “XNN”).</p></li>
 <li><p><strong>extra_args</strong> (<em>list</em><em> of </em><em>str</em><em>, </em><em>optional</em>) – Extra <code class="docutils literal notranslate"><span class="pre">xnn</span> <span class="pre">mdi</span></code> flags appended verbatim (e.g. <code class="docutils literal notranslate"><span class="pre">--dtype</span> <span class="pre">float32</span></code>).</p></li>
 </ul>
 </dd>
-<dt class="field-even">Returns<span class="colon">:</span></dt>
-<dd class="field-even"><p>A ready-to-run argv, possibly with a leading <code class="docutils literal notranslate"><span class="pre">OMP_NUM_THREADS=n</span></code>
+</dl>
+<p class="rubric">Notes</p>
+<p>The dispersion settings come from the checkpoint’s stored training
+configuration (see <a class="reference internal" href="#module-xnn_step.checkpoint" title="xnn_step.checkpoint"><code class="xref py py-mod docutils literal notranslate"><span class="pre">xnn_step.checkpoint</span></code></a>). The engine adds the
+dispersion by itself in both cases: a model trained with the dispersion
+wrapper carries the term, and a model trained on dispersion-subtracted
+targets records it as <code class="docutils literal notranslate"><span class="pre">cfg.subtracted_dispersion</span></code>, which <code class="docutils literal notranslate"><span class="pre">xnn</span> <span class="pre">mdi</span></code>
+adds back. A model with both removes the dispersion twice and is
+refused.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Returns<span class="colon">:</span></dt>
+<dd class="field-odd"><p>A ready-to-run argv, possibly with a leading <code class="docutils literal notranslate"><span class="pre">OMP_NUM_THREADS=n</span></code>
 environment prefix (honored by <code class="docutils literal notranslate"><span class="pre">seamm_mdi.MDIEngine</span></code> and by
 <code class="docutils literal notranslate"><span class="pre">shlex.join</span></code> into a launch script).</p>
 </dd>
-<dt class="field-odd">Return type<span class="colon">:</span></dt>
-<dd class="field-odd"><p>list of str</p>
+<dt class="field-even">Return type<span class="colon">:</span></dt>
+<dd class="field-even"><p>list of str</p>
 </dd>
 </dl>
 </dd></dl>
@@ -1063,13 +1171,20 @@ characters replaced by <code class="docutils literal notranslate"><span class="p
 <dt class="field-even">Returns<span class="colon">:</span></dt>
 <dd class="field-even"><p>Keyed by model name. Each entry carries <code class="docutils literal notranslate"><span class="pre">model_chemistry</span></code>,
 <code class="docutils literal notranslate"><span class="pre">type</span></code> (<code class="docutils literal notranslate"><span class="pre">&quot;MLFF&quot;</span></code>), <code class="docutils literal notranslate"><span class="pre">description</span></code>, <code class="docutils literal notranslate"><span class="pre">periodic_native</span></code>,
-<code class="docutils literal notranslate"><span class="pre">periodic_mdi</span></code>, <code class="docutils literal notranslate"><span class="pre">elements</span></code> (unknown: <code class="docutils literal notranslate"><span class="pre">&quot;&quot;</span></code>), <code class="docutils literal notranslate"><span class="pre">mdi_capable</span></code>,
-<code class="docutils literal notranslate"><span class="pre">mdi_method_arg</span></code> (the model name) and <code class="docutils literal notranslate"><span class="pre">path</span></code> (the checkpoint).</p>
+<code class="docutils literal notranslate"><span class="pre">periodic_mdi</span></code>, <code class="docutils literal notranslate"><span class="pre">elements</span></code> (the atomic numbers the model was
+trained on, e.g. <code class="docutils literal notranslate"><span class="pre">&quot;1,8&quot;</span></code>; <code class="docutils literal notranslate"><span class="pre">&quot;&quot;</span></code> if unknown), <code class="docutils literal notranslate"><span class="pre">mdi_capable</span></code>,
+<code class="docutils literal notranslate"><span class="pre">mdi_method_arg</span></code> (the model name), <code class="docutils literal notranslate"><span class="pre">path</span></code> (the checkpoint),
+<code class="docutils literal notranslate"><span class="pre">family</span></code> (e.g. <code class="docutils literal notranslate"><span class="pre">&quot;mace&quot;</span></code>) and <code class="docutils literal notranslate"><span class="pre">dispersion</span></code> (<code class="docutils literal notranslate"><span class="pre">&quot;&quot;</span></code>, or how
+dispersion enters, e.g. <code class="docutils literal notranslate"><span class="pre">&quot;D4</span> <span class="pre">in</span> <span class="pre">the</span> <span class="pre">model&quot;</span></code>), the last three
+read from the checkpoint’s stored training configuration.</p>
 </dd>
 <dt class="field-odd">Return type<span class="colon">:</span></dt>
 <dd class="field-odd"><p>dict</p>
 </dd>
 </dl>
+<p class="rubric">Notes</p>
+<p>A checkpoint trained with a dispersion wrapper on dispersion-subtracted
+targets removes the dispersion twice; it is logged and not offered.</p>
 </dd></dl>
 
 <dl class="py method">
@@ -1179,6 +1294,14 @@ A SEAMM plug-in for xnn</p>
   <nav id="pst-page-toc-nav" class="page-toc" aria-labelledby="pst-page-navigation-heading-2">
     <ul class="pst-show_toc_level nav section-nav flex-column">
 <li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#submodules">Submodules</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#module-xnn_step.checkpoint">xnn_step.checkpoint module</a><ul class="pst-show_toc_level nav section-nav flex-column">
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#xnn_step.checkpoint.IN_MODEL_KEY"><code class="docutils literal notranslate"><span class="pre">IN_MODEL_KEY</span></code></a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#xnn_step.checkpoint.SUBTRACTED_KEY"><code class="docutils literal notranslate"><span class="pre">SUBTRACTED_KEY</span></code></a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#xnn_step.checkpoint.describe_dispersion"><code class="docutils literal notranslate"><span class="pre">describe_dispersion()</span></code></a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#xnn_step.checkpoint.dispersion_settings"><code class="docutils literal notranslate"><span class="pre">dispersion_settings()</span></code></a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#xnn_step.checkpoint.read_checkpoint_config"><code class="docutils literal notranslate"><span class="pre">read_checkpoint_config()</span></code></a></li>
+</ul>
+</li>
 <li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#module-xnn_step.installer">xnn_step.installer module</a><ul class="pst-show_toc_level nav section-nav flex-column">
 <li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#xnn_step.installer.Installer"><code class="docutils literal notranslate"><span class="pre">Installer</span></code></a><ul class="nav section-nav flex-column">
 <li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#xnn_step.installer.Installer.exe_version"><code class="docutils literal notranslate"><span class="pre">Installer.exe_version()</span></code></a></li>

@@ -78,6 +78,33 @@ an existing environment to 0.4.0 or later, including one rolled back to 0.1.0 by
 xnns needs only ``torch>=2.0``, so a torch installed for the machine's CUDA driver is left
 as it is.
 
+Dispersion and charge
+=====================
+The plug-in reads the training configuration stored in each checkpoint. It does this
+without PyTorch: the configuration is recovered from the checkpoint's pickle with every
+class replaced by an inert stand-in, so nothing in the file is executed. From it the
+Model Chemistry step is told the model family, the elements the model was trained on,
+and how dispersion enters the model. Dispersion can enter in one of two ways, recorded in
+the training configuration:
+
+``model.extra["dispersion"]``
+    The model was trained with xnn's D3/D4 wrapper, so the checkpoint carries the term.
+``subtracted_dispersion`` (top level)
+    The model was trained without the wrapper, on energies and forces from which this
+    dispersion term was subtracted. ``xnn mdi`` adds the identical term back, using the
+    recorded settings, for example ``{name: d4, cutoff_pair: 12.0, switch_width_pair:
+    2.0, cutoff_triple: 8.0, tail_correction: true}``.
+
+In both cases the engine adds the dispersion by itself and the plug-in passes nothing;
+the Model Chemistry step shows which applies, e.g. "D4, 12 Å + tail added by the engine".
+A checkpoint with both was trained with the wrapper on dispersion-subtracted targets,
+which removes the dispersion twice. It is not offered as a model chemistry, and asking
+for it by name is an error.
+
+The D4 dispersion depends on the total charge of the system through its EEQ partial
+charges. For a charged configuration the plug-in passes the charge to the engine as
+``--total-charge``.
+
 Indices and tables
 ==================
 

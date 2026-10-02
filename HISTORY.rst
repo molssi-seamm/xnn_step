@@ -1,6 +1,20 @@
 =======
 History
 =======
+2026.10.2 -- Show what each model is, and pass the charge for D4 models
+    * The Model Chemistry step now describes each xnn model: its family (e.g. MACE), the
+      elements it was trained on, and how dispersion enters it, e.g. "D4, 12 Å + tail
+      added by the engine". The plug-in reads this from the training configuration
+      stored in the checkpoint, without PyTorch and without executing anything in the
+      file.
+    * Models trained on dispersion-subtracted labels, which record the subtracted term
+      as ``subtracted_dispersion`` in their training configuration, are recognized; the
+      ``xnn mdi`` engine adds the term back by itself. A model that records the term
+      and also carries a dispersion wrapper would count the dispersion twice. It is no
+      longer offered, and asking for it by name is an error.
+    * For a charged configuration the total charge is now passed to the engine as
+      ``--total-charge``. D4 dispersion needs it for its EEQ partial charges.
+
 2026.9.28 -- Require xnns 0.4.0, which loads the existing checkpoints
     * The environment now requires ``xnns>=0.4.0`` instead of ``xnns<0.2``. xnns 0.4.0
       loads the checkpoints that 0.2.1 and 0.3.0 could not, and its engine supports

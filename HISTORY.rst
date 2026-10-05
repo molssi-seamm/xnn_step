@@ -12,7 +12,7 @@ History
       cluster login node without a GPU needs; a torch that cannot use the GPU is
       replaced only when asked that way. ``torch`` is no longer in
       ``seamm-xnn.yml``. (seamm_manager#31)
-    * Requires seamm-manager 2026.10.5.1.
+    * Requires seamm-manager 2026.10.5.1, and so Python 3.12 or later.
 
 2026.10.2 -- Show what each model is, and pass the charge for D4 models
     * The Model Chemistry step now describes each xnn model: its family (e.g. MACE), the

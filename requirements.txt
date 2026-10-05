@@ -1,4 +1,4 @@
 seamm
-seamm-manager
+seamm-manager>=2026.10.5.1
 seamm-util>=2026.9.27.1
 seamm-widgets

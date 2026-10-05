@@ -30,6 +30,13 @@ class Installer(seamm_manager.InstallerBase):
     #. Otherwise it is installed in a separate conda environment, `seamm-xnn`
        by default, using the `seamm-xnn.yml` environment file shipped in the
        plug-in's `data/` directory.
+
+    PyTorch is not in that file. The installer puts it in itself, from the
+    PyTorch index that matches the machine's NVIDIA driver (or PyPI on macOS,
+    for MPS), leaves a torch that works alone, and checks afterwards that torch
+    sees the GPU and that `xnn` and `mdi` import. `torch-build` in `xnn.ini`
+    (or `--torch-tag`) forces a build, e.g. on a cluster login node without a
+    GPU. See `seamm_manager.torch_support`.
     """
 
     def __init__(self, logger=logger):
@@ -40,6 +47,11 @@ class Installer(seamm_manager.InstallerBase):
         self.environment = "seamm-xnn"
         self.section = "xnn-step"
         self.executables = ["xnn"]
+        # PyTorch is installed for this machine's NVIDIA driver, a working
+        # torch is left alone, and the environment is checked after install and
+        # update: see seamm_manager.torch_support and seamm_manager#31.
+        self.torch_managed = True
+        self.torch_imports = ("torch", "xnn", "mdi")
 
         self.resource_path = importlib.resources.files("xnn_step") / "data"
 

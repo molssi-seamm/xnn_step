@@ -465,3 +465,26 @@ def test_engine_command_passes_the_total_charge(d4_ini):
 def test_engine_command_refuses_a_double_removed_model(d4_ini):
     with pytest.raises(ValueError, match="removed twice"):
         _command(d4_ini, "twice")
+
+
+def test_installer_manages_torch(monkeypatch):
+    """The installer hands torch to seamm-manager's driver-aware path, and the
+    environment file no longer names torch (seamm_manager#31)."""
+    import importlib.resources
+
+    import yaml
+
+    from xnn_step.installer import Installer
+
+    monkeypatch.setattr("sys.argv", ["xnn-step-installer", "show"])
+    installer = Installer()
+    assert installer.torch_managed is True
+    assert "torch" in installer.torch_imports and "xnn" in installer.torch_imports
+
+    data = importlib.resources.files("xnn_step") / "data"
+    env = yaml.safe_load((data / "seamm-xnn.yml").read_text())
+    pip = [str(r) for d in env["dependencies"] if isinstance(d, dict) for r in d["pip"]]
+    assert not any(r == "torch" or r.startswith("torch=") for r in pip)
+    assert any(r.startswith("xnns") for r in pip)
+    assert "pytorch" not in [str(d).split("=")[0] for d in env["dependencies"]]
+    assert "torch-build = auto" in (data / "xnn.ini").read_text()

@@ -14,3 +14,5 @@ jobs:
     uses: molssi-seamm/devops/.github/workflows/CI.yaml@main
     with:
       src : xnn_step
+      # seamm-manager (a requirement) needs Python >= 3.12; do not test 3.11
+      python-versions: '["3.12"]'

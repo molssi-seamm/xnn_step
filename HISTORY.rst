@@ -1,6 +1,18 @@
 =======
 History
 =======
+2026.10.6 -- PyTorch installed for the machine's NVIDIA driver, and checked
+    * ``xnn-step-installer`` no longer takes whatever torch PyPI serves, which on a
+      machine whose driver is older than the wheel's bundled CUDA runtime imports and
+      silently runs on the CPU. It reads the driver with ``nvidia-smi``, installs torch
+      from the matching PyTorch index (PyPI's wheel on macOS, for mps), applies the
+      rest of the environment on that index, leaves a torch that works alone, and
+      checks afterwards that torch sees the GPU and that ``xnn`` and ``mdi`` import.
+      ``torch-build`` in ``xnn.ini`` or ``--torch-tag`` forces a build, which a
+      cluster login node without a GPU needs; a torch that cannot use the GPU is
+      replaced only when asked that way. ``torch`` is no longer in
+      ``seamm-xnn.yml``. (seamm_manager#31)
+    * Requires seamm-manager 2026.10.6.
 2026.10.2 -- Show what each model is, and pass the charge for D4 models
     * The Model Chemistry step now describes each xnn model: its family (e.g. MACE), the
       elements it was trained on, and how dispersion enters it, e.g. "D4, 12 Å + tail

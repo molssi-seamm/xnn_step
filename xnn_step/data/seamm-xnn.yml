@@ -12,18 +12,16 @@ dependencies:
   # a pip `pymdi` silently overwrites it in a shared environment.
   - pymdi          # provides `import mdi` for the MDI engine
   - pip:
-    # PyTorch is installed with pip, deliberately NOT with conda. The
-    # conda-forge `pytorch` package resolves to the CPU-only `cpu_generic`
-    # build on Linux, and `conda env update` with this file will install it
-    # straight over a pip CUDA build of torch: the GPU silently disappears and
-    # every compiled extension built against the pip ABI (vesin-torch,
-    # cuequivariance, ...) stops loading with "undefined symbol". The pip
-    # wheels are CUDA-enabled on Linux and MPS-enabled on macOS, and pip
-    # leaves an existing torch alone if it already satisfies this requirement.
-    # For a specific CUDA version install torch by hand, following
-    # https://pytorch.org, e.g.
-    #     pip install torch --index-url https://download.pytorch.org/whl/cu126
-    - torch
+    # PyTorch is deliberately NOT listed here. `xnn-step-installer` installs it
+    # itself, from the PyTorch index that matches the machine's NVIDIA driver
+    # (the wheels bundle their CUDA runtime, so the driver decides which build
+    # runs; PyPI's default wheel bundles the newest runtime, which an older
+    # driver cannot use -- torch then silently runs on the CPU). A conda
+    # `pytorch` must never appear above either: conda-forge resolves it to the
+    # CPU-only build on Linux and installs it over a pip CUDA torch. The
+    # installer applies this pip section on torch's index, so nothing here can
+    # pull in a different torch. To force a build, set `torch-build = cu128`
+    # (or cpu, default) in xnn.ini or run the installer with --torch-tag.
     - e3nn==0.4.4    # for the equivariant models (MACE, NequIP, Allegro)
     # vesin-torch gives fast cell-list neighbor lists for large systems on cpu/cuda, but
     # it forces float64 and so breaks Apple's mps device; add it yourself if wanted.
@@ -33,6 +31,6 @@ dependencies:
     # command are unchanged. 0.4.0 or later: releases 0.2.1 and 0.3.0 added
     # `scale_shift` buffers to the MACE model with no defaults for older state
     # dicts, so every checkpoint trained before them failed to load; 0.4.0 has the
-    # defaults, and `xnn mdi --eeq-reuse`. xnns needs only torch>=2.0, so a torch
-    # built for the machine's CUDA driver is kept when this is applied.
+    # defaults, and `xnn mdi --eeq-reuse`. xnns needs only torch>=2.0, so the
+    # torch the installer chose for the machine satisfies it and is kept.
     - xnns>=0.4.0

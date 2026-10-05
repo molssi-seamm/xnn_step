@@ -17,22 +17,33 @@ its own conda environment
 
   xnn-step-installer install
 
-PyTorch is installed with pip, whose wheels support CUDA on Linux and Apple's ``mps``
-on macOS, so using a GPU normally needs no more than ``device = cuda`` in ``xnn.ini``.
-To pin a particular CUDA version, install the matching build by hand afterwards,
-following https://pytorch.org::
+The installer chooses the PyTorch build for the machine. PyTorch wheels bundle their
+CUDA runtime, so the NVIDIA *driver* decides which build runs, and PyPI's default wheel
+-- which bundles the newest runtime -- silently falls back to the CPU on an older driver.
+The installer reads the driver with ``nvidia-smi``, installs torch from the matching
+PyTorch index (PyPI's own wheel on macOS, which supports Apple's ``mps``), and then
+checks that torch sees the GPU and that ``xnn`` imports; it prints what it found. Using a
+GPU then needs no more than ``device = cuda`` in ``xnn.ini``.
 
-  conda run -n seamm-xnn pip install torch \
-      --index-url https://download.pytorch.org/whl/cu126
+On a machine where the driver cannot be read -- a cluster whose login node has no GPU --
+the installer stops and asks you to decide. Set ``torch-build`` in ``xnn.ini`` (``cu128``
+for a current driver, ``cpu`` for a machine without a GPU) or run::
+
+  xnn-step-installer install --torch-tag cu128
+
+A torch that already works is never replaced. One that cannot use the GPU (for instance
+installed from PyPI before this) is reported and left alone, since it may be deliberate;
+``xnn-step-installer update --torch-tag cu128`` replaces it.
 
 ``pymdi``, which provides the MDI library, comes from conda-forge: only that build links
 MDI against MPI, which the ``-method MPI`` launch used for LAMMPS dynamics needs.
 
-.. warning::
+.. note::
    ``conda-environment`` in ``xnn.ini`` may name an environment you built yourself, for
-   instance one shared with LAMMPS. ``xnn-step-installer update`` then applies
-   ``seamm-xnn.yml`` to *that* environment, so anything in it that the file also names
-   may be replaced.
+   instance one shared with LAMMPS. The installer recognises an environment it did not
+   create (from conda's own history) and leaves it alone; to have it add xnn to such an
+   environment anyway, run its ``update --torch-tag <tag>`` deliberately. The file's
+   pip part is applied without upgrading what is already present, on torch's index.
 
 .. _SEAMM Installer: https://molssi-seamm.github.io/installation/index.html
 .. _xnn: https://github.com/molssi-ai/xnn

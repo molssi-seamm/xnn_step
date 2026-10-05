@@ -75,8 +75,8 @@ checkpoint trained before them failed in the engine with ``Missing key(s) in sta
 "model.model.scale_shift.scale", "model.model.scale_shift.shift"`` (and a LAMMPS driver
 then waited forever for the engine); 0.4.0 loads them again. Updating the plug-in moves
 an existing environment to 0.4.0 or later, including one rolled back to 0.1.0 by hand.
-xnns needs only ``torch>=2.0``, so a torch installed for the machine's CUDA driver is left
-as it is.
+xnns needs only ``torch>=2.0``, so the torch the installer chose for the machine's
+driver (see :doc:`../getting_started/index`, ``torch-build``) is left as it is.
 
 Dispersion and charge
 =====================

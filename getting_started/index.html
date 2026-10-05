@@ -7,7 +7,7 @@
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="viewport" content="width=device-width, initial-scale=1" />
 
-    <title>Getting Started &#8212; SEAMM xnn Plug-in 2026.10.2 documentation</title>
+    <title>Getting Started &#8212; SEAMM xnn Plug-in 2026.10.5 documentation</title>
   
   
   
@@ -40,7 +40,7 @@
   <link rel="preload" as="script" href="../_static/scripts/bootstrap.js?digest=64cc4de3f052d77215f0" />
 <link rel="preload" as="script" href="../_static/scripts/pydata-sphinx-theme.js?digest=64cc4de3f052d77215f0" />
 
-    <script src="../_static/documentation_options.js?v=52372788"></script>
+    <script src="../_static/documentation_options.js?v=99beb745"></script>
     <script src="../_static/doctools.js?v=fd6eb6e6"></script>
     <script src="../_static/sphinx_highlight.js?v=6ffebe34"></script>
     <script src="../_static/clipboard.min.js?v=a7894cd8"></script>
@@ -54,7 +54,7 @@
     <link rel="prev" title="Welcome to the documentation for the xnn SEAMM plug-in" href="../index.html" />
   <meta name="viewport" content="width=device-width, initial-scale=1"/>
   <meta name="docsearch:language" content="en"/>
-  <meta name="docsearch:version" content="2026.10.2" />
+  <meta name="docsearch:version" content="2026.10.5" />
   
     
     <script src="../_static/searchtools.js"></script>
@@ -525,22 +525,31 @@ its own conda environment
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">xnn</span><span class="o">-</span><span class="n">step</span><span class="o">-</span><span class="n">installer</span> <span class="n">install</span>
 </pre></div>
 </div>
-<p>PyTorch is installed with pip, whose wheels support CUDA on Linux and Apple’s <code class="docutils literal notranslate"><span class="pre">mps</span></code>
-on macOS, so using a GPU normally needs no more than <code class="docutils literal notranslate"><span class="pre">device</span> <span class="pre">=</span> <span class="pre">cuda</span></code> in <code class="docutils literal notranslate"><span class="pre">xnn.ini</span></code>.
-To pin a particular CUDA version, install the matching build by hand afterwards,
-following <a class="reference external" href="https://pytorch.org">https://pytorch.org</a>:</p>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">conda</span> <span class="n">run</span> <span class="o">-</span><span class="n">n</span> <span class="n">seamm</span><span class="o">-</span><span class="n">xnn</span> <span class="n">pip</span> <span class="n">install</span> <span class="n">torch</span> \
-    <span class="o">--</span><span class="n">index</span><span class="o">-</span><span class="n">url</span> <span class="n">https</span><span class="p">:</span><span class="o">//</span><span class="n">download</span><span class="o">.</span><span class="n">pytorch</span><span class="o">.</span><span class="n">org</span><span class="o">/</span><span class="n">whl</span><span class="o">/</span><span class="n">cu126</span>
+<p>The installer chooses the PyTorch build for the machine. PyTorch wheels bundle their
+CUDA runtime, so the NVIDIA <em>driver</em> decides which build runs, and PyPI’s default wheel
+– which bundles the newest runtime – silently falls back to the CPU on an older driver.
+The installer reads the driver with <code class="docutils literal notranslate"><span class="pre">nvidia-smi</span></code>, installs torch from the matching
+PyTorch index (PyPI’s own wheel on macOS, which supports Apple’s <code class="docutils literal notranslate"><span class="pre">mps</span></code>), and then
+checks that torch sees the GPU and that <code class="docutils literal notranslate"><span class="pre">xnn</span></code> imports; it prints what it found. Using a
+GPU then needs no more than <code class="docutils literal notranslate"><span class="pre">device</span> <span class="pre">=</span> <span class="pre">cuda</span></code> in <code class="docutils literal notranslate"><span class="pre">xnn.ini</span></code>.</p>
+<p>On a machine where the driver cannot be read – a cluster whose login node has no GPU –
+the installer stops and asks you to decide. Set <code class="docutils literal notranslate"><span class="pre">torch-build</span></code> in <code class="docutils literal notranslate"><span class="pre">xnn.ini</span></code> (<code class="docutils literal notranslate"><span class="pre">cu128</span></code>
+for a current driver, <code class="docutils literal notranslate"><span class="pre">cpu</span></code> for a machine without a GPU) or run:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">xnn</span><span class="o">-</span><span class="n">step</span><span class="o">-</span><span class="n">installer</span> <span class="n">install</span> <span class="o">--</span><span class="n">torch</span><span class="o">-</span><span class="n">tag</span> <span class="n">cu128</span>
 </pre></div>
 </div>
+<p>A torch that already works is never replaced. One that cannot use the GPU (for instance
+installed from PyPI before this) is reported and left alone, since it may be deliberate;
+<code class="docutils literal notranslate"><span class="pre">xnn-step-installer</span> <span class="pre">update</span> <span class="pre">--torch-tag</span> <span class="pre">cu128</span></code> replaces it.</p>
 <p><code class="docutils literal notranslate"><span class="pre">pymdi</span></code>, which provides the MDI library, comes from conda-forge: only that build links
 MDI against MPI, which the <code class="docutils literal notranslate"><span class="pre">-method</span> <span class="pre">MPI</span></code> launch used for LAMMPS dynamics needs.</p>
-<div class="admonition warning">
-<p class="admonition-title">Warning</p>
+<div class="admonition note">
+<p class="admonition-title">Note</p>
 <p><code class="docutils literal notranslate"><span class="pre">conda-environment</span></code> in <code class="docutils literal notranslate"><span class="pre">xnn.ini</span></code> may name an environment you built yourself, for
-instance one shared with LAMMPS. <code class="docutils literal notranslate"><span class="pre">xnn-step-installer</span> <span class="pre">update</span></code> then applies
-<code class="docutils literal notranslate"><span class="pre">seamm-xnn.yml</span></code> to <em>that</em> environment, so anything in it that the file also names
-may be replaced.</p>
+instance one shared with LAMMPS. The installer recognises an environment it did not
+create (from conda’s own history) and leaves it alone; to have it add xnn to such an
+environment anyway, run its <code class="docutils literal notranslate"><span class="pre">update</span> <span class="pre">--torch-tag</span> <span class="pre">&lt;tag&gt;</span></code> deliberately. The file’s
+pip part is applied without upgrading what is already present, on torch’s index.</p>
 </div>
 </section>
 <section id="adding-models">

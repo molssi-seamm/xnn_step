@@ -6,7 +6,7 @@
   <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>xnn_step.installer &#8212; SEAMM xnn Plug-in 2026.10.2 documentation</title>
+    <title>xnn_step.installer &#8212; SEAMM xnn Plug-in 2026.10.5 documentation</title>
   
   
   
@@ -39,7 +39,7 @@
   <link rel="preload" as="script" href="../../_static/scripts/bootstrap.js?digest=64cc4de3f052d77215f0" />
 <link rel="preload" as="script" href="../../_static/scripts/pydata-sphinx-theme.js?digest=64cc4de3f052d77215f0" />
 
-    <script src="../../_static/documentation_options.js?v=52372788"></script>
+    <script src="../../_static/documentation_options.js?v=99beb745"></script>
     <script src="../../_static/doctools.js?v=fd6eb6e6"></script>
     <script src="../../_static/sphinx_highlight.js?v=6ffebe34"></script>
     <script src="../../_static/clipboard.min.js?v=a7894cd8"></script>
@@ -51,7 +51,7 @@
     <link rel="search" title="Search" href="../../search.html" />
   <meta name="viewport" content="width=device-width, initial-scale=1"/>
   <meta name="docsearch:language" content="en"/>
-  <meta name="docsearch:version" content="2026.10.2" />
+  <meta name="docsearch:version" content="2026.10.5" />
   
     
     <script src="../../_static/searchtools.js"></script>
@@ -524,6 +524,13 @@
 <span class="sd">    #. Otherwise it is installed in a separate conda environment, `seamm-xnn`</span>
 <span class="sd">       by default, using the `seamm-xnn.yml` environment file shipped in the</span>
 <span class="sd">       plug-in's `data/` directory.</span>
+
+<span class="sd">    PyTorch is not in that file. The installer puts it in itself, from the</span>
+<span class="sd">    PyTorch index that matches the machine's NVIDIA driver (or PyPI on macOS,</span>
+<span class="sd">    for MPS), leaves a torch that works alone, and checks afterwards that torch</span>
+<span class="sd">    sees the GPU and that `xnn` and `mdi` import. `torch-build` in `xnn.ini`</span>
+<span class="sd">    (or `--torch-tag`) forces a build, e.g. on a cluster login node without a</span>
+<span class="sd">    GPU. See `seamm_manager.torch_support`.</span>
 <span class="sd">    """</span>
 
     <span class="k">def</span><span class="w"> </span><span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">logger</span><span class="o">=</span><span class="n">logger</span><span class="p">):</span>
@@ -534,6 +541,11 @@
         <span class="bp">self</span><span class="o">.</span><span class="n">environment</span> <span class="o">=</span> <span class="s2">"seamm-xnn"</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">section</span> <span class="o">=</span> <span class="s2">"xnn-step"</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">executables</span> <span class="o">=</span> <span class="p">[</span><span class="s2">"xnn"</span><span class="p">]</span>
+        <span class="c1"># PyTorch is installed for this machine's NVIDIA driver, a working</span>
+        <span class="c1"># torch is left alone, and the environment is checked after install and</span>
+        <span class="c1"># update: see seamm_manager.torch_support and seamm_manager#31.</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">torch_managed</span> <span class="o">=</span> <span class="kc">True</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">torch_imports</span> <span class="o">=</span> <span class="p">(</span><span class="s2">"torch"</span><span class="p">,</span> <span class="s2">"xnn"</span><span class="p">,</span> <span class="s2">"mdi"</span><span class="p">)</span>
 
         <span class="bp">self</span><span class="o">.</span><span class="n">resource_path</span> <span class="o">=</span> <span class="n">importlib</span><span class="o">.</span><span class="n">resources</span><span class="o">.</span><span class="n">files</span><span class="p">(</span><span class="s2">"xnn_step"</span><span class="p">)</span> <span class="o">/</span> <span class="s2">"data"</span>
 

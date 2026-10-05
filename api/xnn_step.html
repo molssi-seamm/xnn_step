@@ -7,7 +7,7 @@
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="viewport" content="width=device-width, initial-scale=1" />
 
-    <title>xnn_step package &#8212; SEAMM xnn Plug-in 2026.10.2 documentation</title>
+    <title>xnn_step package &#8212; SEAMM xnn Plug-in 2026.10.5 documentation</title>
   
   
   
@@ -40,7 +40,7 @@
   <link rel="preload" as="script" href="../_static/scripts/bootstrap.js?digest=64cc4de3f052d77215f0" />
 <link rel="preload" as="script" href="../_static/scripts/pydata-sphinx-theme.js?digest=64cc4de3f052d77215f0" />
 
-    <script src="../_static/documentation_options.js?v=52372788"></script>
+    <script src="../_static/documentation_options.js?v=99beb745"></script>
     <script src="../_static/doctools.js?v=fd6eb6e6"></script>
     <script src="../_static/sphinx_highlight.js?v=6ffebe34"></script>
     <script src="../_static/clipboard.min.js?v=a7894cd8"></script>
@@ -54,7 +54,7 @@
     <link rel="prev" title="xnn_step" href="modules.html" />
   <meta name="viewport" content="width=device-width, initial-scale=1"/>
   <meta name="docsearch:language" content="en"/>
-  <meta name="docsearch:version" content="2026.10.2" />
+  <meta name="docsearch:version" content="2026.10.5" />
   
     
     <script src="../_static/searchtools.js"></script>
@@ -642,6 +642,12 @@ bundled <cite>seamm-xnn.yml</cite> and registers in <cite>xnn.ini</cite>.</p>
 by default, using the <cite>seamm-xnn.yml</cite> environment file shipped in the
 plug-in’s <cite>data/</cite> directory.</p></li>
 </ol>
+<p>PyTorch is not in that file. The installer puts it in itself, from the
+PyTorch index that matches the machine’s NVIDIA driver (or PyPI on macOS,
+for MPS), leaves a torch that works alone, and checks afterwards that torch
+sees the GPU and that <cite>xnn</cite> and <cite>mdi</cite> import. <cite>torch-build</cite> in <cite>xnn.ini</cite>
+(or <cite>–torch-tag</cite>) forces a build, e.g. on a cluster login node without a
+GPU. See <cite>seamm_manager.torch_support</cite>.</p>
 <dl class="py method">
 <dt class="sig sig-object py" id="xnn_step.installer.Installer.exe_version">
 <span class="sig-name descname"><span class="pre">exe_version</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">config</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/xnn_step/installer.html#Installer.exe_version"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#xnn_step.installer.Installer.exe_version" title="Link to this definition">#</a></dt>

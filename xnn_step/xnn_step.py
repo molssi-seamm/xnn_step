@@ -113,42 +113,65 @@ class XnnStep(object):
         options = {}
         models, sources = cls.available_models(with_sources=True)
         for name, path in models.items():
-            cfg = read_checkpoint_config(path)
             try:
-                in_model, subtracted = dispersion_settings(cfg)
+                options[name] = cls.model_chemistry_option(name, path, sources[name])
             except ValueError as e:
                 logger.warning(f"The xnn model '{name}' is not offered: {e}")
-                continue
-            model = (cfg or {}).get("model") or {}
-            family = str(model.get("name") or "")
-            species = (model.get("extra") or {}).get("species") or []
-            if in_model:
-                dispersion = f"{describe_dispersion(in_model)} in the model"
-            elif subtracted:
-                dispersion = f"{describe_dispersion(subtracted)} added by the engine"
-            else:
-                dispersion = ""
-            description = "xnn machine-learned force field"
-            if family:
-                description += f" ({family.upper()}"
-                if dispersion:
-                    description += f", {dispersion}"
-                description += ")"
-            options[name] = {
-                "model_chemistry": f"xnn:MLFF@{name}",
-                "type": "MLFF",
-                "description": f"{description} {sources[name]}",
-                "source": sources[name],
-                "periodic_native": True,
-                "periodic_mdi": True,
-                "elements": ",".join(str(int(z)) for z in species),
-                "mdi_capable": True,
-                "mdi_method_arg": name,
-                "path": str(path),
-                "family": family,
-                "dispersion": dispersion,
-            }
         return options
+
+    @classmethod
+    def model_chemistry_option(cls, name, path, source=None):
+        """The model chemistry for one checkpoint, as get_model_chemistry_options
+        offers it. Raises ValueError for a checkpoint that removes the dispersion
+        twice."""
+        cfg = read_checkpoint_config(path)
+        in_model, subtracted = dispersion_settings(cfg)
+        model = (cfg or {}).get("model") or {}
+        family = str(model.get("name") or "")
+        species = (model.get("extra") or {}).get("species") or []
+        if in_model:
+            dispersion = f"{describe_dispersion(in_model)} in the model"
+        elif subtracted:
+            dispersion = f"{describe_dispersion(subtracted)} added by the engine"
+        else:
+            dispersion = ""
+        description = "xnn machine-learned force field"
+        if family:
+            description += f" ({family.upper()}"
+            if dispersion:
+                description += f", {dispersion}"
+            description += ")"
+        source = source if source is not None else str(path)
+        return {
+            "model_chemistry": f"xnn:MLFF@{name}",
+            "type": "MLFF",
+            "description": f"{description} {source}",
+            "source": source,
+            "periodic_native": True,
+            "periodic_mdi": True,
+            "elements": ",".join(str(int(z)) for z in species),
+            "mdi_capable": True,
+            "mdi_method_arg": name,
+            "path": str(path),
+            "family": family,
+            "dispersion": dispersion,
+        }
+
+    @classmethod
+    def model_chemistry_for_checkpoint(cls, path):
+        """The model chemistry for a checkpoint given by its path rather than
+        found in the model directories -- e.g. one written during training. Its
+        method is the file's stem, as for the models found.
+
+        Raises FileNotFoundError if there is no such file, and ValueError for a
+        checkpoint that removes the dispersion twice.
+        """
+        path = Path(path).expanduser()
+        if not path.is_file():
+            raise FileNotFoundError(f"There is no xnn checkpoint {path}")
+        return cls.model_chemistry_option(
+            cls.model_name(path), path.resolve(), str(path)
+        )
 
     # Where SEAMM keeps user data, mirroring the Forcefield step: ``personal:``
     # is the user's own data, ``local:`` the machine-wide SEAMM data directory.
@@ -383,9 +406,12 @@ class XnnStep(object):
         n_atoms=None,
         engine_name="XNN",
         extra_args=None,
+        mdi_method="TCP",
+        checkpoint=None,
+        device=None,
         **kwargs,
     ):
-        """Build the argv that launches the xnn MDI *engine* over TCP.
+        """Build the argv that launches the xnn MDI *engine*, over TCP or MPI.
 
         The driver (e.g. the Energy step, via ``seamm_mdi.MDIEngine``) owns the
         rendezvous (TCP, ``port``, ``hostname``) and passes it in; everything
@@ -416,7 +442,21 @@ class XnnStep(object):
         engine_name : str
             The MDI ``-name`` for the engine (default "XNN").
         extra_args : list of str, optional
-            Extra ``xnn mdi`` flags appended verbatim (e.g. ``--dtype float32``).
+            Extra ``xnn mdi`` flags appended verbatim (e.g. ``--dtype float32``,
+            ``--eeq-reuse``): the engine options of the run.
+        mdi_method : str
+            ``"TCP"`` (the default) for an engine the driver reaches over a port,
+            or ``"MPI"`` for one launched with the driver as an MPI pair
+            (LAMMPS's MLFF runs). With MPI the engine runs in the driver's
+            environment -- the two must share MPI and the MDI library -- so the
+            argv has no ``conda run`` and no thread-count prefix, and ``port``
+            and ``hostname`` are not used.
+        checkpoint : str or Path, optional
+            The checkpoint to use instead of looking ``method`` up in the model
+            directories, e.g. one given by path in the Model Chemistry step.
+        device : str, optional
+            The torch device (e.g. ``cuda:0``); the ``device`` in xnn.ini, else
+            ``cpu``, by default.
 
         Notes
         -----
@@ -437,17 +477,32 @@ class XnnStep(object):
         """
         config = cls.get_executor_config(executor, seamm_options)
 
-        models = cls.available_models(config)
-        if method not in models:
-            raise ValueError(
-                f"'{method}' is not an available xnn model; the models found are "
-                f"{sorted(models)}. Check the 'models' directories in xnn.ini."
-            )
-        checkpoint = models[method]
+        if checkpoint is None:
+            models = cls.available_models(config)
+            if method not in models:
+                raise ValueError(
+                    f"'{method}' is not an available xnn model; the models found "
+                    f"are {sorted(models)}. Check the 'models' directories in "
+                    "xnn.ini."
+                )
+            checkpoint = models[method]
         dispersion_settings(read_checkpoint_config(checkpoint))  # refuse double removal
+        if device is None:
+            device = config.get("device", "cpu").strip() or "cpu"
 
         installation = config.get("installation", "conda")
         code = config.get("code", "xnn").split()
+        if mdi_method == "MPI":
+            # In the driver's environment, launched by its mpirun
+            argv = [*code, "mdi", "--ckpt", str(checkpoint), "--device", device]
+            if charge:
+                argv += ["--total-charge", f"{float(charge):g}"]
+            if extra_args:
+                argv.extend(extra_args)
+            argv += ["-mdi", f"-role ENGINE -name {engine_name} -method MPI"]
+            return argv
+        if mdi_method != "TCP":
+            raise ValueError(f"Unknown MDI method '{mdi_method}' (TCP or MPI).")
         if installation == "conda":
             environment = config["conda-environment"]
             if environment[0] == "~" or Path(environment).is_absolute():
@@ -467,13 +522,7 @@ class XnnStep(object):
             f"-role ENGINE -name {engine_name} -method TCP "
             f"-port {port} -hostname {hostname}"
         )
-        argv += [
-            "mdi",
-            "--ckpt",
-            str(checkpoint),
-            "--device",
-            config.get("device", "cpu").strip() or "cpu",
-        ]
+        argv += ["mdi", "--ckpt", str(checkpoint), "--device", device]
         if charge:
             argv += ["--total-charge", f"{float(charge):g}"]
         argv += ["-mdi", mdi_init]

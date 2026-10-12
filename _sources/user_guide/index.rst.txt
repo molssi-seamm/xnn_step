@@ -66,6 +66,23 @@ the MDI library itself to be linked against MPI, which is why the environment ta
 ``pymdi`` from conda-forge rather than PyPI. With the PyPI build the engine stops at
 ``Error in MDI_Init: Failed to initialize MPI``.
 
+For this the plug-in gives the engine's command without ``conda run``: the engine runs
+in the driver's environment, since the two must share MPI and the MDI library, so
+LAMMPS's environment must have xnn installed. LAMMPS asks for it when a Model Chemistry
+step selects an ``xnn:MLFF`` model, and launches the pair itself (see the LAMMPS step's
+documentation)::
+
+    xnn mdi --ckpt <checkpoint> --device cuda:0 <engine options> \
+        -mdi "-role ENGINE -name XNN -method MPI"
+
+Checkpoints by path
+===================
+A Model Chemistry step can name a checkpoint by its path, or with a variable, rather
+than choosing one of the models found in the directories above -- e.g. one written
+during training. It is offered as ``xnn:MLFF@<file stem>`` and checked as the others
+are. The Model Chemistry step's **Engine options** are added to the engine's command for
+that run, e.g. ``--eeq-reuse`` or ``--dispersion "{regime: large}"``.
+
 A model whose checkpoint was pickled by an older ``xnns`` release fails to load with
 ``No module named 'xnn'``; re-save it with the current xnn.
 

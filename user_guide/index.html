@@ -7,7 +7,7 @@
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="viewport" content="width=device-width, initial-scale=1" />
 
-    <title>User Guide &#8212; SEAMM xnn Plug-in 2026.10.5 documentation</title>
+    <title>User Guide &#8212; SEAMM xnn Plug-in 2026.10.12 documentation</title>
   
   
   
@@ -26,8 +26,8 @@
   </noscript>
   
   <!-- Loaded before other Sphinx assets -->
-  <link href="../_static/styles/theme.css?digest=64cc4de3f052d77215f0" rel="stylesheet" />
-<link href="../_static/styles/pydata-sphinx-theme.css?digest=64cc4de3f052d77215f0" rel="stylesheet" />
+  <link href="../_static/styles/theme.css?digest=18bd87630a240e9c25be" rel="stylesheet" />
+<link href="../_static/styles/pydata-sphinx-theme.css?digest=18bd87630a240e9c25be" rel="stylesheet" />
 
     <link rel="stylesheet" type="text/css" href="../_static/pygments.css?v=b86133f3" />
     <link rel="stylesheet" type="text/css" href="../_static/copybutton.css?v=76b2166b" />
@@ -35,12 +35,12 @@
     <link rel="stylesheet" type="text/css" href="../_static/css/custom.css?v=c224919a" />
   
   <!-- So that users can add custom icons -->
-  <script defer src="../_static/scripts/fontawesome.js?digest=64cc4de3f052d77215f0"></script>
+  <script defer src="../_static/scripts/fontawesome.js?digest=18bd87630a240e9c25be"></script>
   <!-- Pre-loaded scripts that we'll load fully later -->
-  <link rel="preload" as="script" href="../_static/scripts/bootstrap.js?digest=64cc4de3f052d77215f0" />
-<link rel="preload" as="script" href="../_static/scripts/pydata-sphinx-theme.js?digest=64cc4de3f052d77215f0" />
+  <link rel="preload" as="script" href="../_static/scripts/bootstrap.js?digest=18bd87630a240e9c25be" />
+<link rel="preload" as="script" href="../_static/scripts/pydata-sphinx-theme.js?digest=18bd87630a240e9c25be" />
 
-    <script src="../_static/documentation_options.js?v=99beb745"></script>
+    <script src="../_static/documentation_options.js?v=a6df0ad7"></script>
     <script src="../_static/doctools.js?v=fd6eb6e6"></script>
     <script src="../_static/sphinx_highlight.js?v=6ffebe34"></script>
     <script src="../_static/clipboard.min.js?v=a7894cd8"></script>
@@ -53,8 +53,9 @@
     <link rel="next" title="Developer Documentation" href="../developer_guide/index.html" />
     <link rel="prev" title="Getting Started" href="../getting_started/index.html" />
   <meta name="viewport" content="width=device-width, initial-scale=1"/>
+  <meta name="color-scheme" content="light dark"/>
   <meta name="docsearch:language" content="en"/>
-  <meta name="docsearch:version" content="2026.10.5" />
+  <meta name="docsearch:version" content="2026.10.12" />
   
     
     <script src="../_static/searchtools.js"></script>
@@ -567,6 +568,23 @@ running dynamics on a GPU, use <code class="docutils literal notranslate"><span 
 the MDI library itself to be linked against MPI, which is why the environment takes
 <code class="docutils literal notranslate"><span class="pre">pymdi</span></code> from conda-forge rather than PyPI. With the PyPI build the engine stops at
 <code class="docutils literal notranslate"><span class="pre">Error</span> <span class="pre">in</span> <span class="pre">MDI_Init:</span> <span class="pre">Failed</span> <span class="pre">to</span> <span class="pre">initialize</span> <span class="pre">MPI</span></code>.</p>
+<p>For this the plug-in gives the engine’s command without <code class="docutils literal notranslate"><span class="pre">conda</span> <span class="pre">run</span></code>: the engine runs
+in the driver’s environment, since the two must share MPI and the MDI library, so
+LAMMPS’s environment must have xnn installed. LAMMPS asks for it when a Model Chemistry
+step selects an <code class="docutils literal notranslate"><span class="pre">xnn:MLFF</span></code> model, and launches the pair itself (see the LAMMPS step’s
+documentation):</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">xnn</span> <span class="n">mdi</span> <span class="o">--</span><span class="n">ckpt</span> <span class="o">&lt;</span><span class="n">checkpoint</span><span class="o">&gt;</span> <span class="o">--</span><span class="n">device</span> <span class="n">cuda</span><span class="p">:</span><span class="mi">0</span> <span class="o">&lt;</span><span class="n">engine</span> <span class="n">options</span><span class="o">&gt;</span> \
+    <span class="o">-</span><span class="n">mdi</span> <span class="s2">"-role ENGINE -name XNN -method MPI"</span>
+</pre></div>
+</div>
+</section>
+<section id="checkpoints-by-path">
+<h2>Checkpoints by path<a class="headerlink" href="#checkpoints-by-path" title="Link to this heading">#</a></h2>
+<p>A Model Chemistry step can name a checkpoint by its path, or with a variable, rather
+than choosing one of the models found in the directories above – e.g. one written
+during training. It is offered as <code class="docutils literal notranslate"><span class="pre">xnn:MLFF&#64;&lt;file</span> <span class="pre">stem&gt;</span></code> and checked as the others
+are. The Model Chemistry step’s <strong>Engine options</strong> are added to the engine’s command for
+that run, e.g. <code class="docutils literal notranslate"><span class="pre">--eeq-reuse</span></code> or <code class="docutils literal notranslate"><span class="pre">--dispersion</span> <span class="pre">&quot;{regime:</span> <span class="pre">large}&quot;</span></code>.</p>
 <p>A model whose checkpoint was pickled by an older <code class="docutils literal notranslate"><span class="pre">xnns</span></code> release fails to load with
 <code class="docutils literal notranslate"><span class="pre">No</span> <span class="pre">module</span> <span class="pre">named</span> <span class="pre">'xnn'</span></code>; re-save it with the current xnn.</p>
 <p>The environment requires <code class="docutils literal notranslate"><span class="pre">xnns&gt;=0.4.0</span></code>. The 0.2.1 and 0.3.0 releases added
@@ -663,6 +681,7 @@ charges. For a charged configuration the plug-in passes the charge to the engine
 <li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#xnn-ini">xnn.ini</a></li>
 <li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#model-chemistries">Model chemistries</a></li>
 <li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#the-mdi-engine">The MDI engine</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#checkpoints-by-path">Checkpoints by path</a></li>
 <li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#dispersion-and-charge">Dispersion and charge</a></li>
 <li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#indices-and-tables">Indices and tables</a></li>
 </ul>
@@ -690,8 +709,8 @@ charges. For a charged configuration the plug-in passes the charge to the engine
   </div>
   
   <!-- Scripts loaded after <body> so the DOM is not blocked -->
-  <script defer src="../_static/scripts/bootstrap.js?digest=64cc4de3f052d77215f0"></script>
-<script defer src="../_static/scripts/pydata-sphinx-theme.js?digest=64cc4de3f052d77215f0"></script>
+  <script defer src="../_static/scripts/bootstrap.js?digest=18bd87630a240e9c25be"></script>
+<script defer src="../_static/scripts/pydata-sphinx-theme.js?digest=18bd87630a240e9c25be"></script>
 
   <footer class="bd-footer">
 <div class="bd-footer__inner bd-page-width">
@@ -703,7 +722,7 @@ charges. For a charged configuration the plug-in passes the charge to the engine
         <div class="footer-item">
 <p class="theme-version">
   <!-- # L10n: Setting the PST URL as an argument as this does not need to be localized -->
-  Built with the <a href="https://pydata-sphinx-theme.readthedocs.io/en/stable/index.html">PyData Sphinx Theme</a> 0.22.0.
+  Built with the <a href="https://pydata-sphinx-theme.readthedocs.io/en/stable/index.html">PyData Sphinx Theme</a> 0.23.0.
 </p></div>
       
     </div>

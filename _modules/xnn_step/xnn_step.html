@@ -6,7 +6,7 @@
   <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>xnn_step.xnn_step &#8212; SEAMM xnn Plug-in 2026.10.5 documentation</title>
+    <title>xnn_step.xnn_step &#8212; SEAMM xnn Plug-in 2026.10.12 documentation</title>
   
   
   
@@ -25,8 +25,8 @@
   </noscript>
   
   <!-- Loaded before other Sphinx assets -->
-  <link href="../../_static/styles/theme.css?digest=64cc4de3f052d77215f0" rel="stylesheet" />
-<link href="../../_static/styles/pydata-sphinx-theme.css?digest=64cc4de3f052d77215f0" rel="stylesheet" />
+  <link href="../../_static/styles/theme.css?digest=18bd87630a240e9c25be" rel="stylesheet" />
+<link href="../../_static/styles/pydata-sphinx-theme.css?digest=18bd87630a240e9c25be" rel="stylesheet" />
 
     <link rel="stylesheet" type="text/css" href="../../_static/pygments.css?v=b86133f3" />
     <link rel="stylesheet" type="text/css" href="../../_static/copybutton.css?v=76b2166b" />
@@ -34,12 +34,12 @@
     <link rel="stylesheet" type="text/css" href="../../_static/css/custom.css?v=c224919a" />
   
   <!-- So that users can add custom icons -->
-  <script defer src="../../_static/scripts/fontawesome.js?digest=64cc4de3f052d77215f0"></script>
+  <script defer src="../../_static/scripts/fontawesome.js?digest=18bd87630a240e9c25be"></script>
   <!-- Pre-loaded scripts that we'll load fully later -->
-  <link rel="preload" as="script" href="../../_static/scripts/bootstrap.js?digest=64cc4de3f052d77215f0" />
-<link rel="preload" as="script" href="../../_static/scripts/pydata-sphinx-theme.js?digest=64cc4de3f052d77215f0" />
+  <link rel="preload" as="script" href="../../_static/scripts/bootstrap.js?digest=18bd87630a240e9c25be" />
+<link rel="preload" as="script" href="../../_static/scripts/pydata-sphinx-theme.js?digest=18bd87630a240e9c25be" />
 
-    <script src="../../_static/documentation_options.js?v=99beb745"></script>
+    <script src="../../_static/documentation_options.js?v=a6df0ad7"></script>
     <script src="../../_static/doctools.js?v=fd6eb6e6"></script>
     <script src="../../_static/sphinx_highlight.js?v=6ffebe34"></script>
     <script src="../../_static/clipboard.min.js?v=a7894cd8"></script>
@@ -50,8 +50,9 @@
     <link rel="index" title="Index" href="../../genindex.html" />
     <link rel="search" title="Search" href="../../search.html" />
   <meta name="viewport" content="width=device-width, initial-scale=1"/>
+  <meta name="color-scheme" content="light dark"/>
   <meta name="docsearch:language" content="en"/>
-  <meta name="docsearch:version" content="2026.10.5" />
+  <meta name="docsearch:version" content="2026.10.12" />
   
     
     <script src="../../_static/searchtools.js"></script>
@@ -609,42 +610,71 @@
         <span class="n">options</span> <span class="o">=</span> <span class="p">{}</span>
         <span class="n">models</span><span class="p">,</span> <span class="n">sources</span> <span class="o">=</span> <span class="bp">cls</span><span class="o">.</span><span class="n">available_models</span><span class="p">(</span><span class="n">with_sources</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
         <span class="k">for</span> <span class="n">name</span><span class="p">,</span> <span class="n">path</span> <span class="ow">in</span> <span class="n">models</span><span class="o">.</span><span class="n">items</span><span class="p">():</span>
-            <span class="n">cfg</span> <span class="o">=</span> <span class="n">read_checkpoint_config</span><span class="p">(</span><span class="n">path</span><span class="p">)</span>
             <span class="k">try</span><span class="p">:</span>
-                <span class="n">in_model</span><span class="p">,</span> <span class="n">subtracted</span> <span class="o">=</span> <span class="n">dispersion_settings</span><span class="p">(</span><span class="n">cfg</span><span class="p">)</span>
+                <span class="n">options</span><span class="p">[</span><span class="n">name</span><span class="p">]</span> <span class="o">=</span> <span class="bp">cls</span><span class="o">.</span><span class="n">model_chemistry_option</span><span class="p">(</span><span class="n">name</span><span class="p">,</span> <span class="n">path</span><span class="p">,</span> <span class="n">sources</span><span class="p">[</span><span class="n">name</span><span class="p">])</span>
             <span class="k">except</span> <span class="ne">ValueError</span> <span class="k">as</span> <span class="n">e</span><span class="p">:</span>
                 <span class="n">logger</span><span class="o">.</span><span class="n">warning</span><span class="p">(</span><span class="sa">f</span><span class="s2">"The xnn model '</span><span class="si">{</span><span class="n">name</span><span class="si">}</span><span class="s2">' is not offered: </span><span class="si">{</span><span class="n">e</span><span class="si">}</span><span class="s2">"</span><span class="p">)</span>
-                <span class="k">continue</span>
-            <span class="n">model</span> <span class="o">=</span> <span class="p">(</span><span class="n">cfg</span> <span class="ow">or</span> <span class="p">{})</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">"model"</span><span class="p">)</span> <span class="ow">or</span> <span class="p">{}</span>
-            <span class="n">family</span> <span class="o">=</span> <span class="nb">str</span><span class="p">(</span><span class="n">model</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">"name"</span><span class="p">)</span> <span class="ow">or</span> <span class="s2">""</span><span class="p">)</span>
-            <span class="n">species</span> <span class="o">=</span> <span class="p">(</span><span class="n">model</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">"extra"</span><span class="p">)</span> <span class="ow">or</span> <span class="p">{})</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">"species"</span><span class="p">)</span> <span class="ow">or</span> <span class="p">[]</span>
-            <span class="k">if</span> <span class="n">in_model</span><span class="p">:</span>
-                <span class="n">dispersion</span> <span class="o">=</span> <span class="sa">f</span><span class="s2">"</span><span class="si">{</span><span class="n">describe_dispersion</span><span class="p">(</span><span class="n">in_model</span><span class="p">)</span><span class="si">}</span><span class="s2"> in the model"</span>
-            <span class="k">elif</span> <span class="n">subtracted</span><span class="p">:</span>
-                <span class="n">dispersion</span> <span class="o">=</span> <span class="sa">f</span><span class="s2">"</span><span class="si">{</span><span class="n">describe_dispersion</span><span class="p">(</span><span class="n">subtracted</span><span class="p">)</span><span class="si">}</span><span class="s2"> added by the engine"</span>
-            <span class="k">else</span><span class="p">:</span>
-                <span class="n">dispersion</span> <span class="o">=</span> <span class="s2">""</span>
-            <span class="n">description</span> <span class="o">=</span> <span class="s2">"xnn machine-learned force field"</span>
-            <span class="k">if</span> <span class="n">family</span><span class="p">:</span>
-                <span class="n">description</span> <span class="o">+=</span> <span class="sa">f</span><span class="s2">" (</span><span class="si">{</span><span class="n">family</span><span class="o">.</span><span class="n">upper</span><span class="p">()</span><span class="si">}</span><span class="s2">"</span>
-                <span class="k">if</span> <span class="n">dispersion</span><span class="p">:</span>
-                    <span class="n">description</span> <span class="o">+=</span> <span class="sa">f</span><span class="s2">", </span><span class="si">{</span><span class="n">dispersion</span><span class="si">}</span><span class="s2">"</span>
-                <span class="n">description</span> <span class="o">+=</span> <span class="s2">")"</span>
-            <span class="n">options</span><span class="p">[</span><span class="n">name</span><span class="p">]</span> <span class="o">=</span> <span class="p">{</span>
-                <span class="s2">"model_chemistry"</span><span class="p">:</span> <span class="sa">f</span><span class="s2">"xnn:MLFF@</span><span class="si">{</span><span class="n">name</span><span class="si">}</span><span class="s2">"</span><span class="p">,</span>
-                <span class="s2">"type"</span><span class="p">:</span> <span class="s2">"MLFF"</span><span class="p">,</span>
-                <span class="s2">"description"</span><span class="p">:</span> <span class="sa">f</span><span class="s2">"</span><span class="si">{</span><span class="n">description</span><span class="si">}</span><span class="s2"> </span><span class="si">{</span><span class="n">sources</span><span class="p">[</span><span class="n">name</span><span class="p">]</span><span class="si">}</span><span class="s2">"</span><span class="p">,</span>
-                <span class="s2">"source"</span><span class="p">:</span> <span class="n">sources</span><span class="p">[</span><span class="n">name</span><span class="p">],</span>
-                <span class="s2">"periodic_native"</span><span class="p">:</span> <span class="kc">True</span><span class="p">,</span>
-                <span class="s2">"periodic_mdi"</span><span class="p">:</span> <span class="kc">True</span><span class="p">,</span>
-                <span class="s2">"elements"</span><span class="p">:</span> <span class="s2">","</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="nb">str</span><span class="p">(</span><span class="nb">int</span><span class="p">(</span><span class="n">z</span><span class="p">))</span> <span class="k">for</span> <span class="n">z</span> <span class="ow">in</span> <span class="n">species</span><span class="p">),</span>
-                <span class="s2">"mdi_capable"</span><span class="p">:</span> <span class="kc">True</span><span class="p">,</span>
-                <span class="s2">"mdi_method_arg"</span><span class="p">:</span> <span class="n">name</span><span class="p">,</span>
-                <span class="s2">"path"</span><span class="p">:</span> <span class="nb">str</span><span class="p">(</span><span class="n">path</span><span class="p">),</span>
-                <span class="s2">"family"</span><span class="p">:</span> <span class="n">family</span><span class="p">,</span>
-                <span class="s2">"dispersion"</span><span class="p">:</span> <span class="n">dispersion</span><span class="p">,</span>
-            <span class="p">}</span>
         <span class="k">return</span> <span class="n">options</span></div>
+
+
+<div class="viewcode-block" id="XnnStep.model_chemistry_option">
+<a class="viewcode-back" href="../../api/xnn_step.html#xnn_step.xnn_step.XnnStep.model_chemistry_option">[docs]</a>
+    <span class="nd">@classmethod</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">model_chemistry_option</span><span class="p">(</span><span class="bp">cls</span><span class="p">,</span> <span class="n">name</span><span class="p">,</span> <span class="n">path</span><span class="p">,</span> <span class="n">source</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">"""The model chemistry for one checkpoint, as get_model_chemistry_options</span>
+<span class="sd">        offers it. Raises ValueError for a checkpoint that removes the dispersion</span>
+<span class="sd">        twice."""</span>
+        <span class="n">cfg</span> <span class="o">=</span> <span class="n">read_checkpoint_config</span><span class="p">(</span><span class="n">path</span><span class="p">)</span>
+        <span class="n">in_model</span><span class="p">,</span> <span class="n">subtracted</span> <span class="o">=</span> <span class="n">dispersion_settings</span><span class="p">(</span><span class="n">cfg</span><span class="p">)</span>
+        <span class="n">model</span> <span class="o">=</span> <span class="p">(</span><span class="n">cfg</span> <span class="ow">or</span> <span class="p">{})</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">"model"</span><span class="p">)</span> <span class="ow">or</span> <span class="p">{}</span>
+        <span class="n">family</span> <span class="o">=</span> <span class="nb">str</span><span class="p">(</span><span class="n">model</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">"name"</span><span class="p">)</span> <span class="ow">or</span> <span class="s2">""</span><span class="p">)</span>
+        <span class="n">species</span> <span class="o">=</span> <span class="p">(</span><span class="n">model</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">"extra"</span><span class="p">)</span> <span class="ow">or</span> <span class="p">{})</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">"species"</span><span class="p">)</span> <span class="ow">or</span> <span class="p">[]</span>
+        <span class="k">if</span> <span class="n">in_model</span><span class="p">:</span>
+            <span class="n">dispersion</span> <span class="o">=</span> <span class="sa">f</span><span class="s2">"</span><span class="si">{</span><span class="n">describe_dispersion</span><span class="p">(</span><span class="n">in_model</span><span class="p">)</span><span class="si">}</span><span class="s2"> in the model"</span>
+        <span class="k">elif</span> <span class="n">subtracted</span><span class="p">:</span>
+            <span class="n">dispersion</span> <span class="o">=</span> <span class="sa">f</span><span class="s2">"</span><span class="si">{</span><span class="n">describe_dispersion</span><span class="p">(</span><span class="n">subtracted</span><span class="p">)</span><span class="si">}</span><span class="s2"> added by the engine"</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">dispersion</span> <span class="o">=</span> <span class="s2">""</span>
+        <span class="n">description</span> <span class="o">=</span> <span class="s2">"xnn machine-learned force field"</span>
+        <span class="k">if</span> <span class="n">family</span><span class="p">:</span>
+            <span class="n">description</span> <span class="o">+=</span> <span class="sa">f</span><span class="s2">" (</span><span class="si">{</span><span class="n">family</span><span class="o">.</span><span class="n">upper</span><span class="p">()</span><span class="si">}</span><span class="s2">"</span>
+            <span class="k">if</span> <span class="n">dispersion</span><span class="p">:</span>
+                <span class="n">description</span> <span class="o">+=</span> <span class="sa">f</span><span class="s2">", </span><span class="si">{</span><span class="n">dispersion</span><span class="si">}</span><span class="s2">"</span>
+            <span class="n">description</span> <span class="o">+=</span> <span class="s2">")"</span>
+        <span class="n">source</span> <span class="o">=</span> <span class="n">source</span> <span class="k">if</span> <span class="n">source</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span> <span class="k">else</span> <span class="nb">str</span><span class="p">(</span><span class="n">path</span><span class="p">)</span>
+        <span class="k">return</span> <span class="p">{</span>
+            <span class="s2">"model_chemistry"</span><span class="p">:</span> <span class="sa">f</span><span class="s2">"xnn:MLFF@</span><span class="si">{</span><span class="n">name</span><span class="si">}</span><span class="s2">"</span><span class="p">,</span>
+            <span class="s2">"type"</span><span class="p">:</span> <span class="s2">"MLFF"</span><span class="p">,</span>
+            <span class="s2">"description"</span><span class="p">:</span> <span class="sa">f</span><span class="s2">"</span><span class="si">{</span><span class="n">description</span><span class="si">}</span><span class="s2"> </span><span class="si">{</span><span class="n">source</span><span class="si">}</span><span class="s2">"</span><span class="p">,</span>
+            <span class="s2">"source"</span><span class="p">:</span> <span class="n">source</span><span class="p">,</span>
+            <span class="s2">"periodic_native"</span><span class="p">:</span> <span class="kc">True</span><span class="p">,</span>
+            <span class="s2">"periodic_mdi"</span><span class="p">:</span> <span class="kc">True</span><span class="p">,</span>
+            <span class="s2">"elements"</span><span class="p">:</span> <span class="s2">","</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="nb">str</span><span class="p">(</span><span class="nb">int</span><span class="p">(</span><span class="n">z</span><span class="p">))</span> <span class="k">for</span> <span class="n">z</span> <span class="ow">in</span> <span class="n">species</span><span class="p">),</span>
+            <span class="s2">"mdi_capable"</span><span class="p">:</span> <span class="kc">True</span><span class="p">,</span>
+            <span class="s2">"mdi_method_arg"</span><span class="p">:</span> <span class="n">name</span><span class="p">,</span>
+            <span class="s2">"path"</span><span class="p">:</span> <span class="nb">str</span><span class="p">(</span><span class="n">path</span><span class="p">),</span>
+            <span class="s2">"family"</span><span class="p">:</span> <span class="n">family</span><span class="p">,</span>
+            <span class="s2">"dispersion"</span><span class="p">:</span> <span class="n">dispersion</span><span class="p">,</span>
+        <span class="p">}</span></div>
+
+
+<div class="viewcode-block" id="XnnStep.model_chemistry_for_checkpoint">
+<a class="viewcode-back" href="../../api/xnn_step.html#xnn_step.xnn_step.XnnStep.model_chemistry_for_checkpoint">[docs]</a>
+    <span class="nd">@classmethod</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">model_chemistry_for_checkpoint</span><span class="p">(</span><span class="bp">cls</span><span class="p">,</span> <span class="n">path</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">"""The model chemistry for a checkpoint given by its path rather than</span>
+<span class="sd">        found in the model directories -- e.g. one written during training. Its</span>
+<span class="sd">        method is the file's stem, as for the models found.</span>
+
+<span class="sd">        Raises FileNotFoundError if there is no such file, and ValueError for a</span>
+<span class="sd">        checkpoint that removes the dispersion twice.</span>
+<span class="sd">        """</span>
+        <span class="n">path</span> <span class="o">=</span> <span class="n">Path</span><span class="p">(</span><span class="n">path</span><span class="p">)</span><span class="o">.</span><span class="n">expanduser</span><span class="p">()</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="n">path</span><span class="o">.</span><span class="n">is_file</span><span class="p">():</span>
+            <span class="k">raise</span> <span class="ne">FileNotFoundError</span><span class="p">(</span><span class="sa">f</span><span class="s2">"There is no xnn checkpoint </span><span class="si">{</span><span class="n">path</span><span class="si">}</span><span class="s2">"</span><span class="p">)</span>
+        <span class="k">return</span> <span class="bp">cls</span><span class="o">.</span><span class="n">model_chemistry_option</span><span class="p">(</span>
+            <span class="bp">cls</span><span class="o">.</span><span class="n">model_name</span><span class="p">(</span><span class="n">path</span><span class="p">),</span> <span class="n">path</span><span class="o">.</span><span class="n">resolve</span><span class="p">(),</span> <span class="nb">str</span><span class="p">(</span><span class="n">path</span><span class="p">)</span>
+        <span class="p">)</span></div>
 
 
     <span class="c1"># Where SEAMM keeps user data, mirroring the Forcefield step: ``personal:``</span>
@@ -897,9 +927,12 @@
         <span class="n">n_atoms</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
         <span class="n">engine_name</span><span class="o">=</span><span class="s2">"XNN"</span><span class="p">,</span>
         <span class="n">extra_args</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
+        <span class="n">mdi_method</span><span class="o">=</span><span class="s2">"TCP"</span><span class="p">,</span>
+        <span class="n">checkpoint</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
+        <span class="n">device</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
         <span class="o">**</span><span class="n">kwargs</span><span class="p">,</span>
     <span class="p">):</span>
-<span class="w">        </span><span class="sd">"""Build the argv that launches the xnn MDI *engine* over TCP.</span>
+<span class="w">        </span><span class="sd">"""Build the argv that launches the xnn MDI *engine*, over TCP or MPI.</span>
 
 <span class="sd">        The driver (e.g. the Energy step, via ``seamm_mdi.MDIEngine``) owns the</span>
 <span class="sd">        rendezvous (TCP, ``port``, ``hostname``) and passes it in; everything</span>
@@ -930,7 +963,21 @@
 <span class="sd">        engine_name : str</span>
 <span class="sd">            The MDI ``-name`` for the engine (default "XNN").</span>
 <span class="sd">        extra_args : list of str, optional</span>
-<span class="sd">            Extra ``xnn mdi`` flags appended verbatim (e.g. ``--dtype float32``).</span>
+<span class="sd">            Extra ``xnn mdi`` flags appended verbatim (e.g. ``--dtype float32``,</span>
+<span class="sd">            ``--eeq-reuse``): the engine options of the run.</span>
+<span class="sd">        mdi_method : str</span>
+<span class="sd">            ``"TCP"`` (the default) for an engine the driver reaches over a port,</span>
+<span class="sd">            or ``"MPI"`` for one launched with the driver as an MPI pair</span>
+<span class="sd">            (LAMMPS's MLFF runs). With MPI the engine runs in the driver's</span>
+<span class="sd">            environment -- the two must share MPI and the MDI library -- so the</span>
+<span class="sd">            argv has no ``conda run`` and no thread-count prefix, and ``port``</span>
+<span class="sd">            and ``hostname`` are not used.</span>
+<span class="sd">        checkpoint : str or Path, optional</span>
+<span class="sd">            The checkpoint to use instead of looking ``method`` up in the model</span>
+<span class="sd">            directories, e.g. one given by path in the Model Chemistry step.</span>
+<span class="sd">        device : str, optional</span>
+<span class="sd">            The torch device (e.g. ``cuda:0``); the ``device`` in xnn.ini, else</span>
+<span class="sd">            ``cpu``, by default.</span>
 
 <span class="sd">        Notes</span>
 <span class="sd">        -----</span>
@@ -951,17 +998,32 @@
 <span class="sd">        """</span>
         <span class="n">config</span> <span class="o">=</span> <span class="bp">cls</span><span class="o">.</span><span class="n">get_executor_config</span><span class="p">(</span><span class="n">executor</span><span class="p">,</span> <span class="n">seamm_options</span><span class="p">)</span>
 
-        <span class="n">models</span> <span class="o">=</span> <span class="bp">cls</span><span class="o">.</span><span class="n">available_models</span><span class="p">(</span><span class="n">config</span><span class="p">)</span>
-        <span class="k">if</span> <span class="n">method</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">models</span><span class="p">:</span>
-            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span>
-                <span class="sa">f</span><span class="s2">"'</span><span class="si">{</span><span class="n">method</span><span class="si">}</span><span class="s2">' is not an available xnn model; the models found are "</span>
-                <span class="sa">f</span><span class="s2">"</span><span class="si">{</span><span class="nb">sorted</span><span class="p">(</span><span class="n">models</span><span class="p">)</span><span class="si">}</span><span class="s2">. Check the 'models' directories in xnn.ini."</span>
-            <span class="p">)</span>
-        <span class="n">checkpoint</span> <span class="o">=</span> <span class="n">models</span><span class="p">[</span><span class="n">method</span><span class="p">]</span>
+        <span class="k">if</span> <span class="n">checkpoint</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="n">models</span> <span class="o">=</span> <span class="bp">cls</span><span class="o">.</span><span class="n">available_models</span><span class="p">(</span><span class="n">config</span><span class="p">)</span>
+            <span class="k">if</span> <span class="n">method</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">models</span><span class="p">:</span>
+                <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span>
+                    <span class="sa">f</span><span class="s2">"'</span><span class="si">{</span><span class="n">method</span><span class="si">}</span><span class="s2">' is not an available xnn model; the models found "</span>
+                    <span class="sa">f</span><span class="s2">"are </span><span class="si">{</span><span class="nb">sorted</span><span class="p">(</span><span class="n">models</span><span class="p">)</span><span class="si">}</span><span class="s2">. Check the 'models' directories in "</span>
+                    <span class="s2">"xnn.ini."</span>
+                <span class="p">)</span>
+            <span class="n">checkpoint</span> <span class="o">=</span> <span class="n">models</span><span class="p">[</span><span class="n">method</span><span class="p">]</span>
         <span class="n">dispersion_settings</span><span class="p">(</span><span class="n">read_checkpoint_config</span><span class="p">(</span><span class="n">checkpoint</span><span class="p">))</span>  <span class="c1"># refuse double removal</span>
+        <span class="k">if</span> <span class="n">device</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="n">device</span> <span class="o">=</span> <span class="n">config</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">"device"</span><span class="p">,</span> <span class="s2">"cpu"</span><span class="p">)</span><span class="o">.</span><span class="n">strip</span><span class="p">()</span> <span class="ow">or</span> <span class="s2">"cpu"</span>
 
         <span class="n">installation</span> <span class="o">=</span> <span class="n">config</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">"installation"</span><span class="p">,</span> <span class="s2">"conda"</span><span class="p">)</span>
         <span class="n">code</span> <span class="o">=</span> <span class="n">config</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">"code"</span><span class="p">,</span> <span class="s2">"xnn"</span><span class="p">)</span><span class="o">.</span><span class="n">split</span><span class="p">()</span>
+        <span class="k">if</span> <span class="n">mdi_method</span> <span class="o">==</span> <span class="s2">"MPI"</span><span class="p">:</span>
+            <span class="c1"># In the driver's environment, launched by its mpirun</span>
+            <span class="n">argv</span> <span class="o">=</span> <span class="p">[</span><span class="o">*</span><span class="n">code</span><span class="p">,</span> <span class="s2">"mdi"</span><span class="p">,</span> <span class="s2">"--ckpt"</span><span class="p">,</span> <span class="nb">str</span><span class="p">(</span><span class="n">checkpoint</span><span class="p">),</span> <span class="s2">"--device"</span><span class="p">,</span> <span class="n">device</span><span class="p">]</span>
+            <span class="k">if</span> <span class="n">charge</span><span class="p">:</span>
+                <span class="n">argv</span> <span class="o">+=</span> <span class="p">[</span><span class="s2">"--total-charge"</span><span class="p">,</span> <span class="sa">f</span><span class="s2">"</span><span class="si">{</span><span class="nb">float</span><span class="p">(</span><span class="n">charge</span><span class="p">)</span><span class="si">:</span><span class="s2">g</span><span class="si">}</span><span class="s2">"</span><span class="p">]</span>
+            <span class="k">if</span> <span class="n">extra_args</span><span class="p">:</span>
+                <span class="n">argv</span><span class="o">.</span><span class="n">extend</span><span class="p">(</span><span class="n">extra_args</span><span class="p">)</span>
+            <span class="n">argv</span> <span class="o">+=</span> <span class="p">[</span><span class="s2">"-mdi"</span><span class="p">,</span> <span class="sa">f</span><span class="s2">"-role ENGINE -name </span><span class="si">{</span><span class="n">engine_name</span><span class="si">}</span><span class="s2"> -method MPI"</span><span class="p">]</span>
+            <span class="k">return</span> <span class="n">argv</span>
+        <span class="k">if</span> <span class="n">mdi_method</span> <span class="o">!=</span> <span class="s2">"TCP"</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="sa">f</span><span class="s2">"Unknown MDI method '</span><span class="si">{</span><span class="n">mdi_method</span><span class="si">}</span><span class="s2">' (TCP or MPI)."</span><span class="p">)</span>
         <span class="k">if</span> <span class="n">installation</span> <span class="o">==</span> <span class="s2">"conda"</span><span class="p">:</span>
             <span class="n">environment</span> <span class="o">=</span> <span class="n">config</span><span class="p">[</span><span class="s2">"conda-environment"</span><span class="p">]</span>
             <span class="k">if</span> <span class="n">environment</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">==</span> <span class="s2">"~"</span> <span class="ow">or</span> <span class="n">Path</span><span class="p">(</span><span class="n">environment</span><span class="p">)</span><span class="o">.</span><span class="n">is_absolute</span><span class="p">():</span>
@@ -981,13 +1043,7 @@
             <span class="sa">f</span><span class="s2">"-role ENGINE -name </span><span class="si">{</span><span class="n">engine_name</span><span class="si">}</span><span class="s2"> -method TCP "</span>
             <span class="sa">f</span><span class="s2">"-port </span><span class="si">{</span><span class="n">port</span><span class="si">}</span><span class="s2"> -hostname </span><span class="si">{</span><span class="n">hostname</span><span class="si">}</span><span class="s2">"</span>
         <span class="p">)</span>
-        <span class="n">argv</span> <span class="o">+=</span> <span class="p">[</span>
-            <span class="s2">"mdi"</span><span class="p">,</span>
-            <span class="s2">"--ckpt"</span><span class="p">,</span>
-            <span class="nb">str</span><span class="p">(</span><span class="n">checkpoint</span><span class="p">),</span>
-            <span class="s2">"--device"</span><span class="p">,</span>
-            <span class="n">config</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">"device"</span><span class="p">,</span> <span class="s2">"cpu"</span><span class="p">)</span><span class="o">.</span><span class="n">strip</span><span class="p">()</span> <span class="ow">or</span> <span class="s2">"cpu"</span><span class="p">,</span>
-        <span class="p">]</span>
+        <span class="n">argv</span> <span class="o">+=</span> <span class="p">[</span><span class="s2">"mdi"</span><span class="p">,</span> <span class="s2">"--ckpt"</span><span class="p">,</span> <span class="nb">str</span><span class="p">(</span><span class="n">checkpoint</span><span class="p">),</span> <span class="s2">"--device"</span><span class="p">,</span> <span class="n">device</span><span class="p">]</span>
         <span class="k">if</span> <span class="n">charge</span><span class="p">:</span>
             <span class="n">argv</span> <span class="o">+=</span> <span class="p">[</span><span class="s2">"--total-charge"</span><span class="p">,</span> <span class="sa">f</span><span class="s2">"</span><span class="si">{</span><span class="nb">float</span><span class="p">(</span><span class="n">charge</span><span class="p">)</span><span class="si">:</span><span class="s2">g</span><span class="si">}</span><span class="s2">"</span><span class="p">]</span>
         <span class="n">argv</span> <span class="o">+=</span> <span class="p">[</span><span class="s2">"-mdi"</span><span class="p">,</span> <span class="n">mdi_init</span><span class="p">]</span>
@@ -1125,8 +1181,8 @@
   </div>
   
   <!-- Scripts loaded after <body> so the DOM is not blocked -->
-  <script defer src="../../_static/scripts/bootstrap.js?digest=64cc4de3f052d77215f0"></script>
-<script defer src="../../_static/scripts/pydata-sphinx-theme.js?digest=64cc4de3f052d77215f0"></script>
+  <script defer src="../../_static/scripts/bootstrap.js?digest=18bd87630a240e9c25be"></script>
+<script defer src="../../_static/scripts/pydata-sphinx-theme.js?digest=18bd87630a240e9c25be"></script>
 
   <footer class="bd-footer">
 <div class="bd-footer__inner bd-page-width">
@@ -1138,7 +1194,7 @@
         <div class="footer-item">
 <p class="theme-version">
   <!-- # L10n: Setting the PST URL as an argument as this does not need to be localized -->
-  Built with the <a href="https://pydata-sphinx-theme.readthedocs.io/en/stable/index.html">PyData Sphinx Theme</a> 0.22.0.
+  Built with the <a href="https://pydata-sphinx-theme.readthedocs.io/en/stable/index.html">PyData Sphinx Theme</a> 0.23.0.
 </p></div>
       
     </div>

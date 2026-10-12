@@ -488,3 +488,60 @@ def test_installer_manages_torch(monkeypatch):
     assert any(r.startswith("xnns") for r in pip)
     assert "pytorch" not in [str(d).split("=")[0] for d in env["dependencies"]]
     assert "torch-build = auto" in (data / "xnn.ini").read_text()
+
+
+# --------------------------------------------------------------------------- #
+# The MPI pair (LAMMPS's MLFF runs) and checkpoints given by path
+# --------------------------------------------------------------------------- #
+
+
+def test_get_mdi_engine_command_mpi(ini, models_dir, monkeypatch):
+    """In MPI mode the engine runs in the driver's environment, launched by its
+    mpirun: no conda run, no thread prefix, the engine options, -method MPI."""
+    monkeypatch.setattr(XnnStep, "thread_count", classmethod(lambda cls: 4))
+    executor = SimpleNamespace(name="local")
+    argv = XnnStep.get_mdi_engine_command(
+        executor,
+        {"root": str(ini)},
+        method="water_mace",
+        port=None,
+        mdi_method="MPI",
+        device="cuda:0",
+        extra_args=["--eeq-reuse", "--dispersion", "{regime: large}"],
+    )
+    assert argv == [
+        "xnn",
+        "mdi",
+        "--ckpt",
+        str(models_dir / "water_mace.pt"),
+        "--device",
+        "cuda:0",
+        "--eeq-reuse",
+        "--dispersion",
+        "{regime: large}",
+        "-mdi",
+        "-role ENGINE -name XNN -method MPI",
+    ]
+
+
+def test_a_checkpoint_given_by_path(ini, tmp_path, monkeypatch):
+    """A checkpoint outside the model directories (e.g. written during
+    training) is used by path, and described like the models found."""
+    monkeypatch.setattr(XnnStep, "thread_count", classmethod(lambda cls: None))
+    checkpoint = tmp_path / "train" / "epoch_12.pt"
+    checkpoint.parent.mkdir()
+    checkpoint.write_bytes(b"not read here")
+    option = XnnStep.model_chemistry_for_checkpoint(checkpoint)
+    assert option["model_chemistry"] == "xnn:MLFF@epoch_12"
+    assert option["path"] == str(checkpoint.resolve())
+    argv = XnnStep.get_mdi_engine_command(
+        SimpleNamespace(name="local"),
+        {"root": str(ini)},
+        method="epoch_12",
+        port=1,
+        mdi_method="MPI",
+        checkpoint=checkpoint,
+    )
+    assert argv[argv.index("--ckpt") + 1] == str(checkpoint)
+    with pytest.raises(FileNotFoundError):
+        XnnStep.model_chemistry_for_checkpoint(tmp_path / "missing.pt")

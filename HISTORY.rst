@@ -1,6 +1,13 @@
 =======
 History
 =======
+2026.10.12 -- The engine as an MPI pair with LAMMPS; checkpoints by path
+    * The engine's command can be for an MPI pair (``-method MPI``), in the driver's
+      environment, as LAMMPS runs a machine-learned forcefield from the Model Chemistry
+      step; with the checkpoint, device and the run's engine options.
+    * A checkpoint given by its path (or a variable) in the Model Chemistry step is
+      offered as ``xnn:MLFF@<file stem>``, checked as the models found are.
+
 2026.10.5 -- PyTorch installed for the machine's NVIDIA driver, and checked
     * ``xnn-step-installer`` no longer takes whatever torch PyPI serves, which on a
       machine whose driver is older than the wheel's bundled CUDA runtime imports and

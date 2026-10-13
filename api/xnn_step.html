@@ -7,7 +7,7 @@
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="viewport" content="width=device-width, initial-scale=1" />
 
-    <title>xnn_step package &#8212; SEAMM xnn Plug-in 2026.10.12 documentation</title>
+    <title>xnn_step package &#8212; SEAMM xnn Plug-in 2026.10.13 documentation</title>
   
   
   
@@ -40,7 +40,7 @@
   <link rel="preload" as="script" href="../_static/scripts/bootstrap.js?digest=18bd87630a240e9c25be" />
 <link rel="preload" as="script" href="../_static/scripts/pydata-sphinx-theme.js?digest=18bd87630a240e9c25be" />
 
-    <script src="../_static/documentation_options.js?v=a6df0ad7"></script>
+    <script src="../_static/documentation_options.js?v=02a78ece"></script>
     <script src="../_static/doctools.js?v=fd6eb6e6"></script>
     <script src="../_static/sphinx_highlight.js?v=6ffebe34"></script>
     <script src="../_static/clipboard.min.js?v=a7894cd8"></script>
@@ -55,7 +55,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1"/>
   <meta name="color-scheme" content="light dark"/>
   <meta name="docsearch:language" content="en"/>
-  <meta name="docsearch:version" content="2026.10.12" />
+  <meta name="docsearch:version" content="2026.10.13" />
   
     
     <script src="../_static/searchtools.js"></script>
@@ -1240,8 +1240,16 @@ step’s <code class="docutils literal notranslate"><span class="pre">personal:<
 <dl class="py method">
 <dt class="sig sig-object py" id="xnn_step.xnn_step.XnnStep.model_name">
 <span class="property"><span class="k"><span class="pre">static</span></span><span class="w"> </span></span><span class="sig-name descname"><span class="pre">model_name</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">path</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/xnn_step/xnn_step.html#XnnStep.model_name"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#xnn_step.xnn_step.XnnStep.model_name" title="Link to this definition">#</a></dt>
-<dd><p>The model-chemistry method name for a checkpoint: its file stem with
-the grammar-reserved characters replaced by <code class="docutils literal notranslate"><span class="pre">-</span></code>.</p>
+<dd><p>The model-chemistry method name for a checkpoint.</p>
+<p>A checkpoint with a name of its own (<code class="docutils literal notranslate"><span class="pre">water_mace.pt</span></code>) is called by its
+file stem. One with a generic name – training writes
+<code class="docutils literal notranslate"><span class="pre">runs/&lt;...&gt;/&lt;run&gt;/best.pt</span></code> and <code class="docutils literal notranslate"><span class="pre">last.pt</span></code> – is called after its
+directory, with the grandparent too when the directory is only an index
+(<code class="docutils literal notranslate"><span class="pre">m1</span></code>, <code class="docutils literal notranslate"><span class="pre">fold2</span></code>, <code class="docutils literal notranslate"><span class="pre">seed0</span></code>), keeping the stem unless it is <code class="docutils literal notranslate"><span class="pre">best</span></code>,
+and then the first 6 hex digits of the SHA-256 of the file: e.g.
+<code class="docutils literal notranslate"><span class="pre">x013_m1-3f9a2c</span></code>, <code class="docutils literal notranslate"><span class="pre">committee_w1-m1-last-7b1e09</span></code>. The name is that
+of these weights: a retrained or later checkpoint in the same place gets
+a different one. The grammar’s reserved characters become <code class="docutils literal notranslate"><span class="pre">-</span></code>.</p>
 </dd></dl>
 
 <dl class="py attribute">

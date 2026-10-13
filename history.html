@@ -7,7 +7,7 @@
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="viewport" content="width=device-width, initial-scale=1" />
 
-    <title>History &#8212; SEAMM xnn Plug-in 2026.10.12 documentation</title>
+    <title>History &#8212; SEAMM xnn Plug-in 2026.10.13 documentation</title>
   
   
   
@@ -40,7 +40,7 @@
   <link rel="preload" as="script" href="_static/scripts/bootstrap.js?digest=18bd87630a240e9c25be" />
 <link rel="preload" as="script" href="_static/scripts/pydata-sphinx-theme.js?digest=18bd87630a240e9c25be" />
 
-    <script src="_static/documentation_options.js?v=a6df0ad7"></script>
+    <script src="_static/documentation_options.js?v=02a78ece"></script>
     <script src="_static/doctools.js?v=fd6eb6e6"></script>
     <script src="_static/sphinx_highlight.js?v=6ffebe34"></script>
     <script src="_static/clipboard.min.js?v=a7894cd8"></script>
@@ -54,7 +54,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1"/>
   <meta name="color-scheme" content="light dark"/>
   <meta name="docsearch:language" content="en"/>
-  <meta name="docsearch:version" content="2026.10.12" />
+  <meta name="docsearch:version" content="2026.10.13" />
   
     
     <script src="_static/searchtools.js"></script>
@@ -511,6 +511,14 @@
   <section id="history">
 <h1>History<a class="headerlink" href="#history" title="Link to this heading">#</a></h1>
 <dl class="simple">
+<dt>2026.10.13 – Distinct names for checkpoints called best.pt, last.pt, …</dt><dd><ul class="simple">
+<li><p>A checkpoint with a generic name – <code class="docutils literal notranslate"><span class="pre">best</span></code>, <code class="docutils literal notranslate"><span class="pre">last</span></code>, <code class="docutils literal notranslate"><span class="pre">model</span></code>, <code class="docutils literal notranslate"><span class="pre">checkpoint</span></code> or
+<code class="docutils literal notranslate"><span class="pre">final</span></code>, as training writes them – is now called after its directory (and the
+one above when its own is only an index such as <code class="docutils literal notranslate"><span class="pre">m1</span></code>) plus a short hash of the
+file, e.g. <code class="docutils literal notranslate"><span class="pre">xnn:MLFF&#64;x013_m1-3f9a2c</span></code> rather than <code class="docutils literal notranslate"><span class="pre">xnn:MLFF&#64;best</span></code>, so results
+from different models are labelled differently. Other checkpoints keep their names.</p></li>
+</ul>
+</dd>
 <dt>2026.10.12 – The engine as an MPI pair with LAMMPS; checkpoints by path</dt><dd><ul class="simple">
 <li><p>The engine’s command can be for an MPI pair (<code class="docutils literal notranslate"><span class="pre">-method</span> <span class="pre">MPI</span></code>), in the driver’s
 environment, as LAMMPS runs a machine-learned forcefield from the Model Chemistry

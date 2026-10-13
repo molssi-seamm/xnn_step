@@ -7,7 +7,7 @@
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="viewport" content="width=device-width, initial-scale=1" />
 
-    <title>User Guide &#8212; SEAMM xnn Plug-in 2026.10.12 documentation</title>
+    <title>User Guide &#8212; SEAMM xnn Plug-in 2026.10.13 documentation</title>
   
   
   
@@ -40,7 +40,7 @@
   <link rel="preload" as="script" href="../_static/scripts/bootstrap.js?digest=18bd87630a240e9c25be" />
 <link rel="preload" as="script" href="../_static/scripts/pydata-sphinx-theme.js?digest=18bd87630a240e9c25be" />
 
-    <script src="../_static/documentation_options.js?v=a6df0ad7"></script>
+    <script src="../_static/documentation_options.js?v=02a78ece"></script>
     <script src="../_static/doctools.js?v=fd6eb6e6"></script>
     <script src="../_static/sphinx_highlight.js?v=6ffebe34"></script>
     <script src="../_static/clipboard.min.js?v=a7894cd8"></script>
@@ -55,7 +55,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1"/>
   <meta name="color-scheme" content="light dark"/>
   <meta name="docsearch:language" content="en"/>
-  <meta name="docsearch:version" content="2026.10.12" />
+  <meta name="docsearch:version" content="2026.10.13" />
   
     
     <script src="../_static/searchtools.js"></script>
@@ -547,10 +547,24 @@ threads the engine may use (<code class="docutils literal notranslate"><span cla
 </section>
 <section id="model-chemistries">
 <h2>Model chemistries<a class="headerlink" href="#model-chemistries" title="Link to this heading">#</a></h2>
-<p>Each checkpoint is advertised as <code class="docutils literal notranslate"><span class="pre">xnn:MLFF&#64;&lt;name&gt;</span></code>, where <code class="docutils literal notranslate"><span class="pre">&lt;name&gt;</span></code> is the file stem
-with any of the grammar’s reserved characters (<code class="docutils literal notranslate"><span class="pre">:</span> <span class="pre">&#64;</span> <span class="pre">/</span> <span class="pre">|</span></code>) replaced by <code class="docutils literal notranslate"><span class="pre">-</span></code>. The
-models are all flagged MDI-capable and periodic-capable: the engine builds the atomic
-graph with the cell when one is sent and returns the stress.</p>
+<p>Each checkpoint is advertised as <code class="docutils literal notranslate"><span class="pre">xnn:MLFF&#64;&lt;name&gt;</span></code>. A checkpoint with a name of its
+own is called by its file stem: <code class="docutils literal notranslate"><span class="pre">water_mace.pt</span></code> is <code class="docutils literal notranslate"><span class="pre">xnn:MLFF&#64;water_mace</span></code>. Training
+writes generic names – <code class="docutils literal notranslate"><span class="pre">runs/&lt;...&gt;/&lt;run&gt;/best.pt</span></code> and <code class="docutils literal notranslate"><span class="pre">last.pt</span></code> – so a checkpoint
+named <code class="docutils literal notranslate"><span class="pre">best</span></code>, <code class="docutils literal notranslate"><span class="pre">last</span></code>, <code class="docutils literal notranslate"><span class="pre">model</span></code>, <code class="docutils literal notranslate"><span class="pre">checkpoint</span></code> or <code class="docutils literal notranslate"><span class="pre">final</span></code> is called after its
+directory instead, with the directory above too when its own is only an index (<code class="docutils literal notranslate"><span class="pre">m1</span></code>,
+<code class="docutils literal notranslate"><span class="pre">fold2</span></code>, <code class="docutils literal notranslate"><span class="pre">seed0</span></code>), the stem unless it is <code class="docutils literal notranslate"><span class="pre">best</span></code>, and the first six hex digits of
+the SHA-256 of the file:</p>
+<ul class="simple">
+<li><p><code class="docutils literal notranslate"><span class="pre">.../x013_m1/best.pt</span></code> is <code class="docutils literal notranslate"><span class="pre">xnn:MLFF&#64;x013_m1-3f9a2c</span></code>;</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">.../x013_m1/last.pt</span></code> is <code class="docutils literal notranslate"><span class="pre">xnn:MLFF&#64;x013_m1-last-7b1e09</span></code>;</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">.../committee_w1/m1/best.pt</span></code> is <code class="docutils literal notranslate"><span class="pre">xnn:MLFF&#64;committee_w1-m1-0c44d5</span></code>.</p></li>
+</ul>
+<p>The hash makes the name that of these weights, so results from a later or retrained
+checkpoint in the same place are not labelled as the same model. To choose a name,
+give the checkpoint one, e.g. with a symlink. In every name the grammar’s reserved
+characters (<code class="docutils literal notranslate"><span class="pre">:</span> <span class="pre">&#64;</span> <span class="pre">/</span> <span class="pre">|</span></code>) are replaced by <code class="docutils literal notranslate"><span class="pre">-</span></code>.</p>
+<p>The models are all flagged MDI-capable and periodic-capable: the engine builds the
+atomic graph with the cell when one is sent and returns the stress.</p>
 </section>
 <section id="the-mdi-engine">
 <h2>The MDI engine<a class="headerlink" href="#the-mdi-engine" title="Link to this heading">#</a></h2>

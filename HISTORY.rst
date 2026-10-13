@@ -1,6 +1,13 @@
 =======
 History
 =======
+2026.10.13 -- Distinct names for checkpoints called best.pt, last.pt, ...
+    * A checkpoint with a generic name -- ``best``, ``last``, ``model``, ``checkpoint`` or
+      ``final``, as training writes them -- is now called after its directory (and the
+      one above when its own is only an index such as ``m1``) plus a short hash of the
+      file, e.g. ``xnn:MLFF@x013_m1-3f9a2c`` rather than ``xnn:MLFF@best``, so results
+      from different models are labelled differently. Other checkpoints keep their names.
+
 2026.10.12 -- The engine as an MPI pair with LAMMPS; checkpoints by path
     * The engine's command can be for an MPI pair (``-method MPI``), in the driver's
       environment, as LAMMPS runs a machine-learned forcefield from the Model Chemistry

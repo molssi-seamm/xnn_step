@@ -11,8 +11,11 @@ chemistry over MDI (Energy, LAMMPS, Dimer Builder, Normal Mode Sampling, ...).
 """
 
 import configparser
+import functools
+import hashlib
 import logging
 import os
+import re
 from pathlib import Path
 import shutil
 
@@ -28,6 +31,31 @@ logger = logging.getLogger(__name__)
 # Characters reserved by the model-chemistry grammar; a model's name must not
 # contain them, so they are replaced in the file stem.
 _RESERVED = ":@/|"
+
+#: Checkpoint file stems that say nothing about the model (see model_name)
+_GENERIC_STEMS = ("best", "last", "model", "checkpoint", "final")
+
+#: Directory names that are only an index within a run (m1, fold2, seed0, ...)
+_INDEX_DIRECTORY = re.compile(r"(?:m|member|fold|seed|s|rep|run)?_?\d+", re.IGNORECASE)
+
+
+@functools.lru_cache(maxsize=256)
+def _cached_digest(path, mtime_ns, size):
+    h = hashlib.sha256()
+    with open(path, "rb") as fd:
+        for block in iter(lambda: fd.read(1 << 20), b""):
+            h.update(block)
+    return h.hexdigest()
+
+
+def _file_digest(path):
+    """The SHA-256 of a file's contents, cached while the file is unchanged; ""
+    if it cannot be read."""
+    try:
+        st = os.stat(path)
+        return _cached_digest(str(path), st.st_mtime_ns, st.st_size)
+    except OSError:
+        return ""
 
 
 class XnnStep(object):
@@ -278,9 +306,32 @@ class XnnStep(object):
 
     @staticmethod
     def model_name(path):
-        """The model-chemistry method name for a checkpoint: its file stem with
-        the grammar-reserved characters replaced by ``-``."""
-        name = Path(path).stem
+        """The model-chemistry method name for a checkpoint.
+
+        A checkpoint with a name of its own (``water_mace.pt``) is called by its
+        file stem. One with a generic name -- training writes
+        ``runs/<...>/<run>/best.pt`` and ``last.pt`` -- is called after its
+        directory, with the grandparent too when the directory is only an index
+        (``m1``, ``fold2``, ``seed0``), keeping the stem unless it is ``best``,
+        and then the first 6 hex digits of the SHA-256 of the file: e.g.
+        ``x013_m1-3f9a2c``, ``committee_w1-m1-last-7b1e09``. The name is that
+        of these weights: a retrained or later checkpoint in the same place gets
+        a different one. The grammar's reserved characters become ``-``.
+        """
+        path = Path(path)
+        stem = path.stem
+        if stem.lower() in _GENERIC_STEMS:
+            parts = [path.parent.name]
+            if _INDEX_DIRECTORY.fullmatch(path.parent.name):
+                parts.insert(0, path.parent.parent.name)
+            if stem.lower() != "best":
+                parts.append(stem)
+            digest = _file_digest(path)
+            if digest:
+                parts.append(digest[:6])
+            name = "-".join(p for p in parts if p)
+        else:
+            name = stem
         for c in _RESERVED:
             name = name.replace(c, "-")
         return name

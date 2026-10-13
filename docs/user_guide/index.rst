@@ -43,10 +43,25 @@ threads the engine may use (``OMP_NUM_THREADS``), or ``available`` for PyTorch's
 
 Model chemistries
 =================
-Each checkpoint is advertised as ``xnn:MLFF@<name>``, where ``<name>`` is the file stem
-with any of the grammar's reserved characters (``: @ / |``) replaced by ``-``. The
-models are all flagged MDI-capable and periodic-capable: the engine builds the atomic
-graph with the cell when one is sent and returns the stress.
+Each checkpoint is advertised as ``xnn:MLFF@<name>``. A checkpoint with a name of its
+own is called by its file stem: ``water_mace.pt`` is ``xnn:MLFF@water_mace``. Training
+writes generic names -- ``runs/<...>/<run>/best.pt`` and ``last.pt`` -- so a checkpoint
+named ``best``, ``last``, ``model``, ``checkpoint`` or ``final`` is called after its
+directory instead, with the directory above too when its own is only an index (``m1``,
+``fold2``, ``seed0``), the stem unless it is ``best``, and the first six hex digits of
+the SHA-256 of the file:
+
+* ``.../x013_m1/best.pt`` is ``xnn:MLFF@x013_m1-3f9a2c``;
+* ``.../x013_m1/last.pt`` is ``xnn:MLFF@x013_m1-last-7b1e09``;
+* ``.../committee_w1/m1/best.pt`` is ``xnn:MLFF@committee_w1-m1-0c44d5``.
+
+The hash makes the name that of these weights, so results from a later or retrained
+checkpoint in the same place are not labelled as the same model. To choose a name,
+give the checkpoint one, e.g. with a symlink. In every name the grammar's reserved
+characters (``: @ / |``) are replaced by ``-``.
+
+The models are all flagged MDI-capable and periodic-capable: the engine builds the
+atomic graph with the cell when one is sent and returns the stress.
 
 The MDI engine
 ==============

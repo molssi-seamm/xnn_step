@@ -545,3 +545,35 @@ def test_a_checkpoint_given_by_path(ini, tmp_path, monkeypatch):
     assert argv[argv.index("--ckpt") + 1] == str(checkpoint)
     with pytest.raises(FileNotFoundError):
         XnnStep.model_chemistry_for_checkpoint(tmp_path / "missing.pt")
+
+
+# --------------------------------------------------------------------------- #
+# Names for generically named checkpoints (best.pt, last.pt, ...)
+# --------------------------------------------------------------------------- #
+
+
+def test_generic_checkpoints_are_named_after_their_run(tmp_path):
+    import hashlib
+
+    def checkpoint(relative, content):
+        path = tmp_path / relative
+        path.parent.mkdir(parents=True, exist_ok=True)
+        path.write_bytes(content)
+        return path, hashlib.sha256(content).hexdigest()[:6]
+
+    best, h1 = checkpoint("runs/ecfec/x013_m1/best.pt", b"weights 1")
+    last, h2 = checkpoint("runs/ecfec/x013_m1/last.pt", b"weights 2")
+    member, h3 = checkpoint("runs/ecfec/committee_w1/m1/best.pt", b"weights 3")
+    assert XnnStep.model_name(best) == f"x013_m1-{h1}"
+    assert XnnStep.model_name(last) == f"x013_m1-last-{h2}"
+    assert XnnStep.model_name(member) == f"committee_w1-m1-{h3}"
+    # The name is that of the weights: a retrained checkpoint gets a new one
+    best.write_bytes(b"weights 4")
+    assert XnnStep.model_name(best) != f"x013_m1-{h1}"
+    # A checkpoint with a name of its own keeps it
+    named, _ = checkpoint("models/water_mace.pt", b"weights 5")
+    assert XnnStep.model_name(named) == "water_mace"
+    # and so does one given its own name by a symlink
+    link = tmp_path / "models" / "x013_m1.pt"
+    link.symlink_to(member)
+    assert XnnStep.model_name(link) == "x013_m1"

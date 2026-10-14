@@ -7,7 +7,7 @@
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="viewport" content="width=device-width, initial-scale=1" />
 
-    <title>xnn_step package &#8212; SEAMM xnn Plug-in 2026.10.13 documentation</title>
+    <title>xnn_step package &#8212; SEAMM xnn Plug-in 2026.10.14 documentation</title>
   
   
   
@@ -40,7 +40,7 @@
   <link rel="preload" as="script" href="../_static/scripts/bootstrap.js?digest=18bd87630a240e9c25be" />
 <link rel="preload" as="script" href="../_static/scripts/pydata-sphinx-theme.js?digest=18bd87630a240e9c25be" />
 
-    <script src="../_static/documentation_options.js?v=02a78ece"></script>
+    <script src="../_static/documentation_options.js?v=c92e1e03"></script>
     <script src="../_static/doctools.js?v=fd6eb6e6"></script>
     <script src="../_static/sphinx_highlight.js?v=6ffebe34"></script>
     <script src="../_static/clipboard.min.js?v=a7894cd8"></script>
@@ -55,7 +55,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1"/>
   <meta name="color-scheme" content="light dark"/>
   <meta name="docsearch:language" content="en"/>
-  <meta name="docsearch:version" content="2026.10.13" />
+  <meta name="docsearch:version" content="2026.10.14" />
   
     
     <script src="../_static/searchtools.js"></script>
@@ -989,6 +989,10 @@ in the configured model directories to the Model Chemistry step (as
 <code class="docutils literal notranslate"><span class="pre">xnn:MLFF&#64;&lt;model&gt;</span></code>), and builds the command that launches <code class="docutils literal notranslate"><span class="pre">xnn</span> <span class="pre">mdi</span></code> – the
 checkpoint served as a resident MDI engine – for any step that drives a model
 chemistry over MDI (Energy, LAMMPS, Dimer Builder, Normal Mode Sampling, …).</p>
+<p>A <em>committee</em> – a directory of members <code class="docutils literal notranslate"><span class="pre">m0/best.pt</span></code>, <code class="docutils literal notranslate"><span class="pre">m1/best.pt</span></code>, …, as the
+Active Learning step’s Train Committee writes – is offered the same way, as one
+model. It runs as the committee-mean engine of the <code class="docutils literal notranslate"><span class="pre">active-learning-step</span></code>
+package, which serves the mean of the members and writes how much they disagree.</p>
 <dl class="py class">
 <dt class="sig sig-object py" id="xnn_step.xnn_step.XnnStep">
 <span class="property"><span class="k"><span class="pre">class</span></span><span class="w"> </span></span><span class="sig-prename descclassname"><span class="pre">xnn_step.xnn_step.</span></span><span class="sig-name descname"><span class="pre">XnnStep</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">flowchart</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">gui</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/xnn_step/xnn_step.html#XnnStep"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#xnn_step.xnn_step.XnnStep" title="Link to this definition">#</a></dt>
@@ -1031,12 +1035,31 @@ default ini if the user has none.</p></li>
 </ul>
 </dd>
 <dt class="field-even">Returns<span class="colon">:</span></dt>
-<dd class="field-even"><p>Model name -&gt; checkpoint path, sorted by name. The directories are
+<dd class="field-even"><p>Model name -&gt; checkpoint path (a committee’s directory for a
+committee), sorted by name. The directories are
 searched in the order listed, so a personal model shadows a local one
 of the same name; the shadowed file is logged and ignored.</p>
 </dd>
 <dt class="field-odd">Return type<span class="colon">:</span></dt>
 <dd class="field-odd"><p>dict[str, Path]  (or (dict[str, Path], dict[str, str]) with sources)</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="xnn_step.xnn_step.XnnStep.committee_members">
+<span class="property"><span class="k"><span class="pre">static</span></span><span class="w"> </span></span><span class="sig-name descname"><span class="pre">committee_members</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">path</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/xnn_step/xnn_step.html#XnnStep.committee_members"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#xnn_step.xnn_step.XnnStep.committee_members" title="Link to this definition">#</a></dt>
+<dd><p>The members’ checkpoints if <code class="docutils literal notranslate"><span class="pre">path</span></code> is a committee, else <code class="docutils literal notranslate"><span class="pre">None</span></code>.</p>
+<p>A committee is a directory of members <code class="docutils literal notranslate"><span class="pre">m0</span></code>, <code class="docutils literal notranslate"><span class="pre">m1</span></code>, … each holding a
+<code class="docutils literal notranslate"><span class="pre">best.pt</span></code>, with at least two members. A <code class="docutils literal notranslate"><span class="pre">committee.json</span></code> in it may
+list the members to use, e.g. <code class="docutils literal notranslate"><span class="pre">{&quot;members&quot;:</span> <span class="pre">[&quot;m0&quot;,</span> <span class="pre">&quot;m1&quot;,</span> <span class="pre">&quot;m3&quot;]}</span></code> to leave
+one out.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Returns<span class="colon">:</span></dt>
+<dd class="field-odd"><p>The checkpoints, in the order of the members.</p>
+</dd>
+<dt class="field-even">Return type<span class="colon">:</span></dt>
+<dd class="field-even"><p>[Path] or None</p>
 </dd>
 </dl>
 </dd></dl>
@@ -1145,7 +1168,10 @@ environment – the two must share MPI and the MDI library – so the
 argv has no <code class="docutils literal notranslate"><span class="pre">conda</span> <span class="pre">run</span></code> and no thread-count prefix, and <code class="docutils literal notranslate"><span class="pre">port</span></code>
 and <code class="docutils literal notranslate"><span class="pre">hostname</span></code> are not used.</p></li>
 <li><p><strong>checkpoint</strong> (<em>str</em><em> or </em><em>Path</em><em>, </em><em>optional</em>) – The checkpoint to use instead of looking <code class="docutils literal notranslate"><span class="pre">method</span></code> up in the model
-directories, e.g. one given by path in the Model Chemistry step.</p></li>
+directories, e.g. one given by path in the Model Chemistry step. A
+committee’s directory runs the committee-mean engine of the
+active-learning-step package instead of <code class="docutils literal notranslate"><span class="pre">xnn</span> <span class="pre">mdi</span></code>: it serves the
+members’ mean and writes their spreads to <code class="docutils literal notranslate"><span class="pre">committee_spreads.csv</span></code>.</p></li>
 <li><p><strong>device</strong> (<em>str</em><em>, </em><em>optional</em>) – The torch device (e.g. <code class="docutils literal notranslate"><span class="pre">cuda:0</span></code>); the <code class="docutils literal notranslate"><span class="pre">device</span></code> in xnn.ini, else
 <code class="docutils literal notranslate"><span class="pre">cpu</span></code>, by default.</p></li>
 </ul>
@@ -1210,7 +1236,8 @@ targets removes the dispersion twice; it is logged and not offered.</p>
 <span class="property"><span class="k"><span class="pre">classmethod</span></span><span class="w"> </span></span><span class="sig-name descname"><span class="pre">model_chemistry_for_checkpoint</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">path</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/xnn_step/xnn_step.html#XnnStep.model_chemistry_for_checkpoint"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#xnn_step.xnn_step.XnnStep.model_chemistry_for_checkpoint" title="Link to this definition">#</a></dt>
 <dd><p>The model chemistry for a checkpoint given by its path rather than
 found in the model directories – e.g. one written during training. Its
-method is the file’s stem, as for the models found.</p>
+method is the file’s stem, as for the models found. The path may also be
+a committee’s directory.</p>
 <p>Raises FileNotFoundError if there is no such file, and ValueError for a
 checkpoint that removes the dispersion twice.</p>
 </dd></dl>
@@ -1250,6 +1277,8 @@ and then the first 6 hex digits of the SHA-256 of the file: e.g.
 <code class="docutils literal notranslate"><span class="pre">x013_m1-3f9a2c</span></code>, <code class="docutils literal notranslate"><span class="pre">committee_w1-m1-last-7b1e09</span></code>. The name is that
 of these weights: a retrained or later checkpoint in the same place gets
 a different one. The grammar’s reserved characters become <code class="docutils literal notranslate"><span class="pre">-</span></code>.</p>
+<p>A committee is called by its directory’s name, or, when that is generic
+(<code class="docutils literal notranslate"><span class="pre">committee</span></code>), by its parent’s with the start of a hash of its members.</p>
 </dd></dl>
 
 <dl class="py attribute">
@@ -1398,6 +1427,7 @@ A SEAMM plug-in for xnn</p>
 <li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#module-xnn_step.xnn_step">xnn_step.xnn_step module</a><ul class="pst-show_toc_level nav section-nav flex-column">
 <li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#xnn_step.xnn_step.XnnStep"><code class="docutils literal notranslate"><span class="pre">XnnStep</span></code></a><ul class="nav section-nav flex-column">
 <li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#xnn_step.xnn_step.XnnStep.available_models"><code class="docutils literal notranslate"><span class="pre">XnnStep.available_models()</span></code></a></li>
+<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#xnn_step.xnn_step.XnnStep.committee_members"><code class="docutils literal notranslate"><span class="pre">XnnStep.committee_members()</span></code></a></li>
 <li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#xnn_step.xnn_step.XnnStep.create_node"><code class="docutils literal notranslate"><span class="pre">XnnStep.create_node()</span></code></a></li>
 <li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#xnn_step.xnn_step.XnnStep.create_tk_node"><code class="docutils literal notranslate"><span class="pre">XnnStep.create_tk_node()</span></code></a></li>
 <li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#xnn_step.xnn_step.XnnStep.description"><code class="docutils literal notranslate"><span class="pre">XnnStep.description()</span></code></a></li>

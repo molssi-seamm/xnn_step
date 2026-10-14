@@ -3,6 +3,7 @@
 
 """Tests for the `xnn_step` package: the model-chemistry / MDI-engine provider."""
 
+from pathlib import Path
 from types import SimpleNamespace
 
 import pytest  # noqa: F401
@@ -577,3 +578,117 @@ def test_generic_checkpoints_are_named_after_their_run(tmp_path):
     link = tmp_path / "models" / "x013_m1.pt"
     link.symlink_to(member)
     assert XnnStep.model_name(link) == "x013_m1"
+
+
+# --------------------------------------------------------------------------- #
+# Committees: a directory of members m0/best.pt, m1/best.pt, ...
+# --------------------------------------------------------------------------- #
+
+
+def _committee(directory, n=3):
+    for k in range(n):
+        member = directory / f"m{k}"
+        member.mkdir(parents=True)
+        (member / "best.pt").write_bytes(f"member {k}".encode())
+        (member / "last.pt").write_bytes(b"x")
+    return directory
+
+
+def test_committee_members(tmp_path):
+    committee = _committee(tmp_path / "water_committee", n=3)
+    members = XnnStep.committee_members(committee)
+    assert members == [committee / f"m{k}" / "best.pt" for k in range(3)]
+    # a committee.json chooses the members
+    (committee / "committee.json").write_text('{"members": ["m0", "m2"]}')
+    assert XnnStep.committee_members(committee) == [
+        committee / "m0" / "best.pt",
+        committee / "m2" / "best.pt",
+    ]
+    # one member, a file, or no members: not a committee
+    assert XnnStep.committee_members(_committee(tmp_path / "single", n=1)) is None
+    assert XnnStep.committee_members(committee / "m0" / "best.pt") is None
+    assert XnnStep.committee_members(tmp_path) is None
+
+
+def test_committees_are_offered_as_models(ini, models_dir, monkeypatch):
+    _committee(models_dir / "water_committee")
+    models = XnnStep.available_models({"models": str(models_dir), "pattern": "*.pt"})
+    assert models["water_committee"] == models_dir / "water_committee"
+    monkeypatch.setattr(
+        XnnStep, "_ini_path", classmethod(lambda cls, r=None: ini / "xnn.ini")
+    )
+    options = XnnStep.get_model_chemistry_options()
+    option = options["water_committee"]
+    assert option["model_chemistry"] == "xnn:MLFF@water_committee"
+    assert option["committee"] == 3
+    assert option["description"].startswith("xnn committee of 3 models")
+    assert option["engine_files"] == ["committee_spreads.csv", "*.extxyz"]
+    assert options["water_mace"]["committee"] == 0
+    assert options["water_mace"]["engine_files"] == []
+
+
+def test_a_generic_committee_directory_is_named_after_its_parent(tmp_path):
+    committee = _committee(tmp_path / "round2" / "committee")
+    name = XnnStep.model_name(committee)
+    assert (
+        name.startswith("round2-committee-")
+        and len(name) == len("round2-committee-") + 6
+    )
+
+
+def test_committee_engine_command(ini, tmp_path, monkeypatch):
+    """A committee runs seamm-al's committee-mean engine, with this package's
+    code on its PYTHONPATH, over MPI and TCP."""
+    pytest.importorskip("active_learning_step.launch")
+    monkeypatch.setenv("HOME", str(tmp_path / "home"))
+    monkeypatch.setattr(XnnStep, "thread_count", classmethod(lambda cls: None))
+    committee = _committee(tmp_path / "round2" / "committee")
+    option = XnnStep.model_chemistry_for_checkpoint(committee)
+    assert option["committee"] == 3
+    executor = SimpleNamespace(name="local")
+    argv = XnnStep.get_mdi_engine_command(
+        executor,
+        {"root": str(ini)},
+        method=option["mdi_method_arg"],
+        port=None,
+        mdi_method="MPI",
+        checkpoint=committee,
+        charge=-1,
+        extra_args=["--dtype", "float32"],
+    )
+    assert argv[0] == "env" and argv[1].startswith("PYTHONPATH=")
+    code = Path(argv[1].split("=", 1)[1])
+    assert code.parent == tmp_path / "home" / ".seamm.d" / "active_learning" / "code"
+    assert (code / "active_learning_step" / "engine.py").exists()
+    i = argv.index("python")
+    assert argv[i + 1 : i + 4] == ["-m", "active_learning_step.cli", "engine"]
+    members = argv[argv.index("--members") + 1 : argv.index("--device")]
+    assert members == [str(committee / f"m{k}" / "best.pt") for k in range(3)]
+    assert argv[argv.index("--total-charge") + 1] == "-1"
+    assert argv[argv.index("--spreads") + 1] == "committee_spreads.csv"
+    assert argv[-4:] == [
+        "--dtype",
+        "float32",
+        "-mdi",
+        "-role ENGINE -name XNN -method MPI",
+    ]
+
+    argv = XnnStep.get_mdi_engine_command(
+        executor,
+        {"root": str(ini)},
+        method=option["mdi_method_arg"],
+        port=8021,
+        hostname="localhost",
+        checkpoint=committee,
+    )
+    assert argv[:5] == [
+        "/opt/conda/bin/conda",
+        "run",
+        "--live-stream",
+        "-n",
+        "seamm-xnn",
+    ]
+    assert argv[5] == "env" and "python" in argv
+    assert (
+        argv[-1] == "-role ENGINE -name XNN -method TCP -port 8021 -hostname localhost"
+    )

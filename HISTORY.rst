@@ -1,6 +1,16 @@
 =======
 History
 =======
+2026.10.14 -- Committees of models as one model chemistry
+    * A committee -- a directory of members ``m0/best.pt``, ``m1/best.pt``, ... as the
+      Active Learning step trains them -- is offered as one model, ``xnn:MLFF@<name>``,
+      found in the model directories or given by path. It runs as the committee-mean
+      engine of the active-learning-step package, serving the members' mean and
+      writing their spreads to ``committee_spreads.csv``, for molecular dynamics that
+      shows where the model is uncertain.
+    * A model chemistry now lists the files its engine writes (``engine_files``), so
+      that the step driving it keeps them, e.g. a committee's spreads in LAMMPS.
+
 2026.10.13 -- Distinct names for checkpoints called best.pt, last.pt, ...
     * A checkpoint with a generic name -- ``best``, ``last``, ``model``, ``checkpoint`` or
       ``final``, as training writes them -- is now called after its directory (and the

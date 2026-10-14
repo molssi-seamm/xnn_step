@@ -110,6 +110,36 @@ an existing environment to 0.4.0 or later, including one rolled back to 0.1.0 by
 xnns needs only ``torch>=2.0``, so the torch the installer chose for the machine's
 driver (see :doc:`../getting_started/index`, ``torch-build``) is left as it is.
 
+Committees
+==========
+A committee -- a directory of members ``m0/best.pt``, ``m1/best.pt``, ..., each trained
+on a different part of the data, as the Active Learning step's Train Committee writes
+one -- is offered as a single model. In a model directory it is called by the
+directory's name (``water_r2/`` is ``xnn:MLFF@water_r2``); given by path, a directory
+with a generic name such as ``committee`` is called after its parent with a short hash
+of the members. A ``committee.json`` in the directory, e.g. ``{"members": ["m0", "m1",
+"m3"]}``, chooses the members; otherwise all are used, and a committee needs at least
+two. Every member must handle the dispersion the same way.
+
+A committee runs as the committee-mean engine of the `active-learning-step`_ package,
+which must be installed with SEAMM, in the same MLFF environment and the same way as a
+single model (``conda run`` and TCP, or as an MPI pair)::
+
+    env PYTHONPATH=<copy of the package> python -m active_learning_step.cli engine \
+        --members m0/best.pt m1/best.pt ... --device <device> \
+        --spreads committee_spreads.csv --every 10 <engine options> -mdi "..."
+
+The forces, energy and stress are the members' mean, and every ten steps the spreads
+of the members -- of the energy, the forces and the pressure -- are appended to
+``committee_spreads.csv`` in the step's directory. Nothing is installed in the MLFF
+environment: a copy of the package's code, made once per version in
+``~/.seamm.d/active_learning/code/``, is put on its ``PYTHONPATH``. The Model Chemistry
+step's **Engine options** go to this engine, e.g. ``--every 20``, ``--flag
+rho_forces=0.2`` (write the frames whose spread reaches it), ``--dtype float32`` or
+``--eeq-reuse``.
+
+.. _active-learning-step: https://molssi-seamm.github.io/active_learning_step/
+
 Dispersion and charge
 =====================
 The plug-in reads the training configuration stored in each checkpoint. It does this

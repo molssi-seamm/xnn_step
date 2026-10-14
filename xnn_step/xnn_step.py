@@ -8,11 +8,17 @@ in the configured model directories to the Model Chemistry step (as
 ``xnn:MLFF@<model>``), and builds the command that launches ``xnn mdi`` -- the
 checkpoint served as a resident MDI engine -- for any step that drives a model
 chemistry over MDI (Energy, LAMMPS, Dimer Builder, Normal Mode Sampling, ...).
+
+A *committee* -- a directory of members ``m0/best.pt``, ``m1/best.pt``, ..., as the
+Active Learning step's Train Committee writes -- is offered the same way, as one
+model. It runs as the committee-mean engine of the ``active-learning-step``
+package, which serves the mean of the members and writes how much they disagree.
 """
 
 import configparser
 import functools
 import hashlib
+import json
 import logging
 import os
 import re
@@ -34,6 +40,13 @@ _RESERVED = ":@/|"
 
 #: Checkpoint file stems that say nothing about the model (see model_name)
 _GENERIC_STEMS = ("best", "last", "model", "checkpoint", "final")
+
+#: A committee's member directories (m0, m1, ...) and the checkpoint served
+_MEMBER_DIRECTORY = re.compile(r"m(\d+)")
+_MEMBER_CHECKPOINT = "best.pt"
+
+#: Directory names that say nothing about a committee (see model_name)
+_GENERIC_DIRECTORIES = ("committee", "members", "models")
 
 #: Directory names that are only an index within a run (m1, fold2, seed0, ...)
 _INDEX_DIRECTORY = re.compile(r"(?:m|member|fold|seed|s|rep|run)?_?\d+", re.IGNORECASE)
@@ -152,8 +165,19 @@ class XnnStep(object):
         """The model chemistry for one checkpoint, as get_model_chemistry_options
         offers it. Raises ValueError for a checkpoint that removes the dispersion
         twice."""
-        cfg = read_checkpoint_config(path)
+        members = cls.committee_members(path)
+        first = members[0] if members else path
+        cfg = read_checkpoint_config(first)
         in_model, subtracted = dispersion_settings(cfg)
+        for member in (members or [])[1:]:
+            if dispersion_settings(read_checkpoint_config(member)) != (
+                in_model,
+                subtracted,
+            ):
+                raise ValueError(
+                    f"the members of the committee {path} differ in how they "
+                    "handle the dispersion"
+                )
         model = (cfg or {}).get("model") or {}
         family = str(model.get("name") or "")
         species = (model.get("extra") or {}).get("species") or []
@@ -163,7 +187,10 @@ class XnnStep(object):
             dispersion = f"{describe_dispersion(subtracted)} added by the engine"
         else:
             dispersion = ""
-        description = "xnn machine-learned force field"
+        if members:
+            description = f"xnn committee of {len(members)} models"
+        else:
+            description = "xnn machine-learned force field"
         if family:
             description += f" ({family.upper()}"
             if dispersion:
@@ -183,20 +210,22 @@ class XnnStep(object):
             "path": str(path),
             "family": family,
             "dispersion": dispersion,
+            "committee": len(members) if members else 0,
         }
 
     @classmethod
     def model_chemistry_for_checkpoint(cls, path):
         """The model chemistry for a checkpoint given by its path rather than
         found in the model directories -- e.g. one written during training. Its
-        method is the file's stem, as for the models found.
+        method is the file's stem, as for the models found. The path may also be
+        a committee's directory.
 
         Raises FileNotFoundError if there is no such file, and ValueError for a
         checkpoint that removes the dispersion twice.
         """
         path = Path(path).expanduser()
-        if not path.is_file():
-            raise FileNotFoundError(f"There is no xnn checkpoint {path}")
+        if not path.is_file() and cls.committee_members(path) is None:
+            raise FileNotFoundError(f"There is no xnn checkpoint or committee {path}")
         return cls.model_chemistry_option(
             cls.model_name(path), path.resolve(), str(path)
         )
@@ -272,7 +301,8 @@ class XnnStep(object):
         Returns
         -------
         dict[str, Path]  (or (dict[str, Path], dict[str, str]) with sources)
-            Model name -> checkpoint path, sorted by name. The directories are
+            Model name -> checkpoint path (a committee's directory for a
+            committee), sorted by name. The directories are
             searched in the order listed, so a personal model shadows a local one
             of the same name; the shadowed file is logged and ignored.
         """
@@ -286,8 +316,14 @@ class XnnStep(object):
             if not directory.is_dir():
                 logger.debug(f"xnn model directory {directory} does not exist")
                 continue
-            for path in sorted(directory.glob(pattern)):
-                if not path.is_file():
+            candidates = list(directory.glob(pattern))
+            candidates += [
+                p
+                for p in directory.iterdir()
+                if p.is_dir() and cls.committee_members(p) is not None
+            ]
+            for path in sorted(candidates):
+                if not path.is_file() and not path.is_dir():
                     continue
                 name = cls.model_name(path)
                 source = f"{prefix}{path.name}" if prefix else str(path)
@@ -317,8 +353,24 @@ class XnnStep(object):
         ``x013_m1-3f9a2c``, ``committee_w1-m1-last-7b1e09``. The name is that
         of these weights: a retrained or later checkpoint in the same place gets
         a different one. The grammar's reserved characters become ``-``.
+
+        A committee is called by its directory's name, or, when that is generic
+        (``committee``), by its parent's with the start of a hash of its members.
         """
         path = Path(path)
+        if path.is_dir():
+            # a committee: its directory, after its parent if that says more
+            name = path.name
+            if name.lower() in _GENERIC_DIRECTORIES:
+                digest = hashlib.sha256(
+                    "".join(
+                        _file_digest(m) for m in XnnStep.committee_members(path) or []
+                    ).encode()
+                ).hexdigest()
+                name = f"{path.parent.name}-{name}-{digest[:6]}"
+            for c in _RESERVED:
+                name = name.replace(c, "-")
+            return name
         stem = path.stem
         if stem.lower() in _GENERIC_STEMS:
             parts = [path.parent.name]
@@ -335,6 +387,47 @@ class XnnStep(object):
         for c in _RESERVED:
             name = name.replace(c, "-")
         return name
+
+    @staticmethod
+    def committee_members(path):
+        """The members' checkpoints if ``path`` is a committee, else ``None``.
+
+        A committee is a directory of members ``m0``, ``m1``, ... each holding a
+        ``best.pt``, with at least two members. A ``committee.json`` in it may
+        list the members to use, e.g. ``{"members": ["m0", "m1", "m3"]}`` to leave
+        one out.
+
+        Returns
+        -------
+        [Path] or None
+            The checkpoints, in the order of the members.
+        """
+        path = Path(path)
+        if not path.is_dir():
+            return None
+        listing = path / "committee.json"
+        if listing.is_file():
+            try:
+                names = json.loads(listing.read_text())["members"]
+            except (ValueError, KeyError, TypeError) as e:
+                raise ValueError(f"{listing} does not list the members: {e}")
+            members = []
+            for name in names:
+                member = path / name
+                if member.is_dir():
+                    member = member / _MEMBER_CHECKPOINT
+                if not member.is_file():
+                    raise ValueError(f"{listing}: there is no member {member}")
+                members.append(member)
+        else:
+            found = []
+            for directory in path.iterdir():
+                match = _MEMBER_DIRECTORY.fullmatch(directory.name)
+                checkpoint = directory / _MEMBER_CHECKPOINT
+                if match and checkpoint.is_file():
+                    found.append((int(match.group(1)), checkpoint))
+            members = [checkpoint for _, checkpoint in sorted(found)]
+        return members if len(members) >= 2 else None
 
     @staticmethod
     def seamm_root():
@@ -504,7 +597,10 @@ class XnnStep(object):
             and ``hostname`` are not used.
         checkpoint : str or Path, optional
             The checkpoint to use instead of looking ``method`` up in the model
-            directories, e.g. one given by path in the Model Chemistry step.
+            directories, e.g. one given by path in the Model Chemistry step. A
+            committee's directory runs the committee-mean engine of the
+            active-learning-step package instead of ``xnn mdi``: it serves the
+            members' mean and writes their spreads to ``committee_spreads.csv``.
         device : str, optional
             The torch device (e.g. ``cuda:0``); the ``device`` in xnn.ini, else
             ``cpu``, by default.
@@ -537,7 +633,9 @@ class XnnStep(object):
                     "xnn.ini."
                 )
             checkpoint = models[method]
-        dispersion_settings(read_checkpoint_config(checkpoint))  # refuse double removal
+        members = cls.committee_members(checkpoint)
+        for path in members or [checkpoint]:
+            dispersion_settings(read_checkpoint_config(path))  # refuse double removal
         if device is None:
             device = config.get("device", "cpu").strip() or "cpu"
 
@@ -545,6 +643,15 @@ class XnnStep(object):
         code = config.get("code", "xnn").split()
         if mdi_method == "MPI":
             # In the driver's environment, launched by its mpirun
+            if members is not None:
+                return cls._committee_command(
+                    code,
+                    members,
+                    f"-role ENGINE -name {engine_name} -method MPI",
+                    device=device,
+                    charge=charge,
+                    extra_args=extra_args,
+                )
             argv = [*code, "mdi", "--ckpt", str(checkpoint), "--device", device]
             if charge:
                 argv += ["--total-charge", f"{float(charge):g}"]
@@ -560,9 +667,9 @@ class XnnStep(object):
                 env_args = ["-p", str(Path(environment).expanduser())]
             else:
                 env_args = ["-n", environment]
-            argv = [config["conda"], "run", "--live-stream", *env_args, *code]
+            argv = [config["conda"], "run", "--live-stream", *env_args]
         elif installation == "local":
-            argv = [*code]
+            argv = []
         else:
             raise NotImplementedError(
                 "The xnn MDI engine is wired up for 'conda' and 'local' "
@@ -573,12 +680,23 @@ class XnnStep(object):
             f"-role ENGINE -name {engine_name} -method TCP "
             f"-port {port} -hostname {hostname}"
         )
-        argv += ["mdi", "--ckpt", str(checkpoint), "--device", device]
-        if charge:
-            argv += ["--total-charge", f"{float(charge):g}"]
-        argv += ["-mdi", mdi_init]
-        if extra_args:
-            argv.extend(extra_args)
+        if members is not None:
+            argv += cls._committee_command(
+                code,
+                members,
+                mdi_init,
+                device=device,
+                charge=charge,
+                extra_args=extra_args,
+                in_environment=installation == "conda",
+            )
+        else:
+            argv += [*code, "mdi", "--ckpt", str(checkpoint), "--device", device]
+            if charge:
+                argv += ["--total-charge", f"{float(charge):g}"]
+            argv += ["-mdi", mdi_init]
+            if extra_args:
+                argv.extend(extra_args)
 
         # Cap the CPU threads from the [xnn-step] section of seamm.ini, if asked.
         n = cls.thread_count()
@@ -586,6 +704,37 @@ class XnnStep(object):
             argv = [f"OMP_NUM_THREADS={n}", f"MKL_NUM_THREADS={n}", *argv]
 
         return argv
+
+    @staticmethod
+    def _committee_command(
+        code, members, mdi, *, device, charge, extra_args, in_environment=False
+    ):
+        """The argv of a committee's engine, from the active-learning-step package.
+
+        Its Python is the one beside the ``xnn`` command, or ``python`` when the
+        environment is active (``conda run``, or ``xnn`` found on the PATH).
+        """
+        try:
+            from active_learning_step.launch import engine_command
+        except ImportError as e:
+            raise ValueError(
+                "A committee runs as the committee-mean engine of the "
+                "active-learning-step package, which is not installed with SEAMM: "
+                "install it to use committees."
+            ) from e
+        program = Path(code[0])
+        if in_environment or program.parent == Path():
+            python = "python"
+        else:
+            python = str(program.with_name("python"))
+        return engine_command(
+            python,
+            members,
+            mdi,
+            device=device,
+            charge=charge,
+            extra_args=list(extra_args or ()),
+        )
 
     @staticmethod
     def seamm_ini_path():

@@ -131,7 +131,8 @@ single model (``conda run`` and TCP, or as an MPI pair)::
 
 The forces, energy and stress are the members' mean, and every ten steps the spreads
 of the members -- of the energy, the forces and the pressure -- are appended to
-``committee_spreads.csv`` in the step's directory. Nothing is installed in the MLFF
+``committee_spreads.csv`` in the step's directory, which the step keeps (the model
+chemistry lists the files its engine writes as ``engine_files``). Nothing is installed in the MLFF
 environment: a copy of the package's code, made once per version in
 ``~/.seamm.d/active_learning/code/``, is put on its ``PYTHONPATH``. The Model Chemistry
 step's **Engine options** go to this engine, e.g. ``--every 20``, ``--flag

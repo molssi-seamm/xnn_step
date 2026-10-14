@@ -45,6 +45,9 @@ _GENERIC_STEMS = ("best", "last", "model", "checkpoint", "final")
 _MEMBER_DIRECTORY = re.compile(r"m(\d+)")
 _MEMBER_CHECKPOINT = "best.pt"
 
+#: What a committee's engine writes: its spreads and any flagged frames
+_COMMITTEE_FILES = ("committee_spreads.csv", "*.extxyz")
+
 #: Directory names that say nothing about a committee (see model_name)
 _GENERIC_DIRECTORIES = ("committee", "members", "models")
 
@@ -211,6 +214,8 @@ class XnnStep(object):
             "family": family,
             "dispersion": dispersion,
             "committee": len(members) if members else 0,
+            # files the engine writes, for the driving step to keep
+            "engine_files": list(_COMMITTEE_FILES) if members else [],
         }
 
     @classmethod

@@ -622,7 +622,9 @@ def test_committees_are_offered_as_models(ini, models_dir, monkeypatch):
     assert option["model_chemistry"] == "xnn:MLFF@water_committee"
     assert option["committee"] == 3
     assert option["description"].startswith("xnn committee of 3 models")
+    assert option["engine_files"] == ["committee_spreads.csv", "*.extxyz"]
     assert options["water_mace"]["committee"] == 0
+    assert options["water_mace"]["engine_files"] == []
 
 
 def test_a_generic_committee_directory_is_named_after_its_parent(tmp_path):

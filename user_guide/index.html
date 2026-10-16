@@ -7,7 +7,7 @@
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="viewport" content="width=device-width, initial-scale=1" />
 
-    <title>User Guide &#8212; SEAMM xnn Plug-in 2026.10.14 documentation</title>
+    <title>User Guide &#8212; SEAMM xnn Plug-in 2026.10.16 documentation</title>
   
   
   
@@ -40,7 +40,7 @@
   <link rel="preload" as="script" href="../_static/scripts/bootstrap.js?digest=18bd87630a240e9c25be" />
 <link rel="preload" as="script" href="../_static/scripts/pydata-sphinx-theme.js?digest=18bd87630a240e9c25be" />
 
-    <script src="../_static/documentation_options.js?v=c92e1e03"></script>
+    <script src="../_static/documentation_options.js?v=5aae1070"></script>
     <script src="../_static/doctools.js?v=fd6eb6e6"></script>
     <script src="../_static/sphinx_highlight.js?v=6ffebe34"></script>
     <script src="../_static/clipboard.min.js?v=a7894cd8"></script>
@@ -55,7 +55,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1"/>
   <meta name="color-scheme" content="light dark"/>
   <meta name="docsearch:language" content="en"/>
-  <meta name="docsearch:version" content="2026.10.14" />
+  <meta name="docsearch:version" content="2026.10.16" />
   
     
     <script src="../_static/searchtools.js"></script>
@@ -616,8 +616,10 @@ driver (see <a class="reference internal" href="../getting_started/index.html"><
 on a different part of the data, as the Active Learning step’s Train Committee writes
 one – is offered as a single model. In a model directory it is called by the
 directory’s name (<code class="docutils literal notranslate"><span class="pre">water_r2/</span></code> is <code class="docutils literal notranslate"><span class="pre">xnn:MLFF&#64;water_r2</span></code>); given by path, a directory
-with a generic name such as <code class="docutils literal notranslate"><span class="pre">committee</span></code> is called after its parent with a short hash
-of the members. A <code class="docutils literal notranslate"><span class="pre">committee.json</span></code> in the directory, e.g. <code class="docutils literal notranslate"><span class="pre">{&quot;members&quot;:</span> <span class="pre">[&quot;m0&quot;,</span> <span class="pre">&quot;m1&quot;,</span>
+with a generic name such as <code class="docutils literal notranslate"><span class="pre">committee</span></code> is called after the nearest directory above it
+that says more, skipping indices such as a job’s step directories, with a short hash of
+the members: <code class="docutils literal notranslate"><span class="pre">Job_012130/2/1/committee</span></code> is <code class="docutils literal notranslate"><span class="pre">xnn:MLFF&#64;Job_012130-committee-5c20d7</span></code>.
+A <code class="docutils literal notranslate"><span class="pre">committee.json</span></code> in the directory, e.g. <code class="docutils literal notranslate"><span class="pre">{&quot;members&quot;:</span> <span class="pre">[&quot;m0&quot;,</span> <span class="pre">&quot;m1&quot;,</span>
 <span class="pre">&quot;m3&quot;]}</span></code>, chooses the members; otherwise all are used, and a committee needs at least
 two. Every member must handle the dispersion the same way.</p>
 <p>A committee runs as the committee-mean engine of the <a class="reference external" href="https://molssi-seamm.github.io/active_learning_step/">active-learning-step</a> package,

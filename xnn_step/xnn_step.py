@@ -359,12 +359,15 @@ class XnnStep(object):
         of these weights: a retrained or later checkpoint in the same place gets
         a different one. The grammar's reserved characters become ``-``.
 
-        A committee is called by its directory's name, or, when that is generic
-        (``committee``), by its parent's with the start of a hash of its members.
+        A committee is called by its directory's name. When that is generic
+        (``committee``), it is called after the nearest directory above it that
+        is neither an index nor generic -- a job's step directories (``2/1``) are
+        indices -- with the start of a hash of its members: e.g.
+        ``Job_012130/2/1/committee`` is ``Job_012130-committee-5c20d7``.
         """
         path = Path(path)
         if path.is_dir():
-            # a committee: its directory, after its parent if that says more
+            # a committee: its directory, after the nearest one above that says more
             name = path.name
             if name.lower() in _GENERIC_DIRECTORIES:
                 digest = hashlib.sha256(
@@ -372,7 +375,17 @@ class XnnStep(object):
                         _file_digest(m) for m in XnnStep.committee_members(path) or []
                     ).encode()
                 ).hexdigest()
-                name = f"{path.parent.name}-{name}-{digest[:6]}"
+                parts = [name, digest[:6]]
+                for parent in path.absolute().parents:
+                    if parent.name == "":
+                        break
+                    if not (
+                        _INDEX_DIRECTORY.fullmatch(parent.name)
+                        or parent.name.lower() in _GENERIC_DIRECTORIES
+                    ):
+                        parts.insert(0, parent.name)
+                        break
+                name = "-".join(parts)
             for c in _RESERVED:
                 name = name.replace(c, "-")
             return name

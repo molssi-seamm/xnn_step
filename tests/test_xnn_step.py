@@ -636,6 +636,23 @@ def test_a_generic_committee_directory_is_named_after_its_parent(tmp_path):
     )
 
 
+def test_a_committee_in_a_job_step_is_named_after_the_job(tmp_path):
+    """Step directories (2/1) and generic ones are skipped for the name."""
+    committee = _committee(tmp_path / "Job_012130" / "2" / "1" / "committee")
+    name = XnnStep.model_name(committee)
+    assert name.startswith("Job_012130-committee-")
+    assert len(name) == len("Job_012130-committee-") + 6
+
+    nested = _committee(tmp_path / "round3" / "models" / "m2" / "committee")
+    assert XnnStep.model_name(nested).startswith("round3-committee-")
+
+
+def test_a_relative_committee_is_named_from_its_absolute_path(tmp_path, monkeypatch):
+    _committee(tmp_path / "round4" / "7" / "committee")
+    monkeypatch.chdir(tmp_path / "round4" / "7")
+    assert XnnStep.model_name(Path("committee")).startswith("round4-committee-")
+
+
 def test_committee_engine_command(ini, tmp_path, monkeypatch):
     """A committee runs seamm-al's committee-mean engine, with this package's
     code on its PYTHONPATH, over MPI and TCP."""

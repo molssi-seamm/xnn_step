@@ -116,8 +116,10 @@ A committee -- a directory of members ``m0/best.pt``, ``m1/best.pt``, ..., each 
 on a different part of the data, as the Active Learning step's Train Committee writes
 one -- is offered as a single model. In a model directory it is called by the
 directory's name (``water_r2/`` is ``xnn:MLFF@water_r2``); given by path, a directory
-with a generic name such as ``committee`` is called after its parent with a short hash
-of the members. A ``committee.json`` in the directory, e.g. ``{"members": ["m0", "m1",
+with a generic name such as ``committee`` is called after the nearest directory above it
+that says more, skipping indices such as a job's step directories, with a short hash of
+the members: ``Job_012130/2/1/committee`` is ``xnn:MLFF@Job_012130-committee-5c20d7``.
+A ``committee.json`` in the directory, e.g. ``{"members": ["m0", "m1",
 "m3"]}``, chooses the members; otherwise all are used, and a committee needs at least
 two. Every member must handle the dispersion the same way.
 

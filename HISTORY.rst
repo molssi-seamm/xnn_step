@@ -1,6 +1,14 @@
 =======
 History
 =======
+2026.10.16 -- Bugfix: readable names for committees in a job
+    * A committee given by path in a directory with a generic name, such as the
+      ``committee`` that the Active Learning step's Train Committee writes, was called
+      after its parent directory, which in a job is just the step's number:
+      ``Job_012130/2/1/committee`` became ``xnn:MLFF@1-committee-5c20d7``. It is now
+      called after the nearest directory above it that is neither an index nor generic,
+      here ``xnn:MLFF@Job_012130-committee-5c20d7``.
+
 2026.10.14 -- Committees of models as one model chemistry
     * A committee -- a directory of members ``m0/best.pt``, ``m1/best.pt``, ... as the
       Active Learning step trains them -- is offered as one model, ``xnn:MLFF@<name>``,

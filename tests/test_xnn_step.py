@@ -709,3 +709,65 @@ def test_committee_engine_command(ini, tmp_path, monkeypatch):
     assert (
         argv[-1] == "-role ENGINE -name XNN -method TCP -port 8021 -hostname localhost"
     )
+
+
+# --------------------------------------------------------------------------- #
+# The installer: the default device, and what the committee engine needs
+# --------------------------------------------------------------------------- #
+
+
+def test_environment_has_ase_for_committees():
+    """The committee-mean engine runs in seamm-xnn and imports ase."""
+    import importlib.resources
+
+    import yaml
+
+    data = importlib.resources.files("xnn_step") / "data"
+    env = yaml.safe_load((data / "seamm-xnn.yml").read_text())
+    pip = [str(r) for d in env["dependencies"] if isinstance(d, dict) for r in d["pip"]]
+    assert any(r == "ase" or r.startswith("ase>") for r in pip)
+
+
+def _installer(monkeypatch, root, cuda):
+    """An installer whose conda install only writes xnn.ini, and whose torch
+    probe says whether CUDA can be used."""
+    import seamm_manager
+
+    from xnn_step.installer import Installer
+
+    monkeypatch.setattr("sys.argv", ["xnn-step-installer", "show"])
+    monkeypatch.setattr(
+        seamm_manager.InstallerBase,
+        "install",
+        lambda self: self.check_exe_configuration_file(),
+    )
+    monkeypatch.setattr(Installer, "shared_codes", property(lambda self: False))
+    installer = Installer()
+    installer._root = root
+    monkeypatch.setattr(
+        installer, "_probe_torch", lambda env: {"torch": True, "cuda_available": cuda}
+    )
+    return installer
+
+
+def _device(path):
+    for line in path.read_text().splitlines():
+        if line.startswith("device"):
+            return line.split("=", 1)[1].strip()
+
+
+@pytest.mark.parametrize("cuda, expected", [(True, "cuda"), (False, "cpu")])
+def test_new_ini_uses_the_gpu(tmp_path, monkeypatch, cuda, expected):
+    _installer(monkeypatch, tmp_path, cuda).install()
+    assert _device(tmp_path / "xnn.ini") == expected
+
+
+def test_existing_ini_is_not_changed(tmp_path, monkeypatch, capsys):
+    import importlib.resources
+
+    template = importlib.resources.files("xnn_step") / "data" / "xnn.ini"
+    path = tmp_path / "xnn.ini"
+    path.write_text(template.read_text())
+    _installer(monkeypatch, tmp_path, True).install()
+    assert _device(path) == "cpu"
+    assert "set 'device = cuda'" in capsys.readouterr().out

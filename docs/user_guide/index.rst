@@ -25,6 +25,9 @@ per executor, normally just ``[local]``:
     path may be given.
 ``device``
     The PyTorch device the engine evaluates on: ``cpu``, ``cuda``, ``cuda:0``, ``mps``.
+    The installer writes ``cuda`` when it creates the file and the environment's PyTorch
+    can use an NVIDIA GPU, and ``cpu`` otherwise; it never changes an existing file, but
+    says so when the GPU could be used.
     On Apple silicon ``mps`` works only for a float32 model and only without the
     optional ``vesin-torch`` neighbor-list package, which insists on float64 (Apple's
     GPU has none); for small molecules the CPU is as fast or faster anyway.
@@ -134,9 +137,11 @@ single model (``conda run`` and TCP, or as an MPI pair)::
 The forces, energy and stress are the members' mean, and every ten steps the spreads
 of the members -- of the energy, the forces and the pressure -- are appended to
 ``committee_spreads.csv`` in the step's directory, which the step keeps (the model
-chemistry lists the files its engine writes as ``engine_files``). Nothing is installed in the MLFF
-environment: a copy of the package's code, made once per version in
-``~/.seamm.d/active_learning/code/``, is put on its ``PYTHONPATH``. The Model Chemistry
+chemistry lists the files its engine writes as ``engine_files``). The package itself is not
+installed in the MLFF environment: a copy of its code, made once per version in
+``~/.seamm.d/active_learning/code/``, is put on its ``PYTHONPATH``. The engine needs ASE
+there, which ``seamm-xnn`` includes from xnn-step 2026.10.17 on; for an older environment,
+or one you built yourself, install it with ``pip install ase``. The Model Chemistry
 step's **Engine options** go to this engine, e.g. ``--every 20``, ``--flag
 rho_forces=0.2`` (write the frames whose spread reaches it), ``--dtype float32`` or
 ``--eeq-reuse``.

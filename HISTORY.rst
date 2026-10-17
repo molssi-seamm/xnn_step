@@ -1,6 +1,16 @@
 =======
 History
 =======
+2026.10.17 -- Bugfix: committees in a standard installation, and the GPU by default
+    * The ``seamm-xnn`` environment now includes ASE. A committee's engine runs in that
+      environment and needs ASE for its spreads, so in a standard installation a
+      committee's molecular dynamics stopped at the first spreads it wrote. Updating
+      the plug-in adds ASE to an existing ``seamm-xnn``.
+    * When the installer creates ``xnn.ini`` and the environment's PyTorch can use an
+      NVIDIA GPU, it sets ``device = cuda``, so that the Energy step and others run the
+      model on the GPU rather than the CPU. An existing ``xnn.ini`` is never changed; the
+      installer says when its ``device = cpu`` could be ``cuda``.
+
 2026.10.16 -- Bugfix: readable names for committees in a job
     * A committee given by path in a directory with a generic name, such as the
       ``committee`` that the Active Learning step's Train Committee writes, was called

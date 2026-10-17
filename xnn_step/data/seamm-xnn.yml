@@ -34,3 +34,7 @@ dependencies:
     # defaults, and `xnn mdi --eeq-reuse`. xnns needs only torch>=2.0, so the
     # torch the installer chose for the machine satisfies it and is kept.
     - xnns>=0.4.0
+    # ASE is needed by the committee-mean engine of active-learning-step, which runs in
+    # this environment: it finds the molecules for the molecular pressure spread and
+    # writes the flagged frames. xnns does not depend on it.
+    - ase

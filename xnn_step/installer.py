@@ -58,6 +58,40 @@ class Installer(seamm_manager.InstallerBase):
         logger.debug(f"data directory: {self.resource_path}")
         self.environment_file = self.resource_path / "seamm-xnn.yml"
 
+    def install(self):
+        """Install, then use the GPU by default when the environment can.
+
+        The ``device`` in a newly written ``xnn.ini`` is set to ``cuda`` when the
+        environment's torch can use an NVIDIA GPU. An existing ``xnn.ini`` is
+        never changed: a ``device = cpu`` there may be deliberate, so the
+        installer only says that the GPU could be used.
+        """
+        path = self.root / self.init_file_name
+        existed = path.exists()
+        super().install()
+        if self.shared_codes or not path.exists():
+            return
+        try:
+            probe = self._probe_torch(self.environment)
+        except Exception as e:  # never fail the install over the default device
+            logger.debug(f"Could not probe torch in {self.environment}: {e}")
+            return
+        if not (probe or {}).get("cuda_available"):
+            return
+        self.exe_config.path = path
+        device = self.exe_config.get_values("local").get("device", "cpu")
+        if device not in (None, "", "cpu"):
+            return
+        if existed:
+            print(
+                f"    The GPU could be used: set 'device = cuda' in {path} to run "
+                "the models on it."
+            )
+            return
+        self.exe_config.set_value("local", "device", "cuda")
+        self.exe_config.save()
+        print(f"    torch can use the GPU, so {path} has 'device = cuda'.")
+
     def exe_version(self, config):
         """Get the version of the xnn package in its environment.
 

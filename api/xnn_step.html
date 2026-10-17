@@ -7,7 +7,7 @@
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="viewport" content="width=device-width, initial-scale=1" />
 
-    <title>xnn_step package &#8212; SEAMM xnn Plug-in 2026.10.16 documentation</title>
+    <title>xnn_step package &#8212; SEAMM xnn Plug-in 2026.10.17 documentation</title>
   
   
   
@@ -40,7 +40,7 @@
   <link rel="preload" as="script" href="../_static/scripts/bootstrap.js?digest=18bd87630a240e9c25be" />
 <link rel="preload" as="script" href="../_static/scripts/pydata-sphinx-theme.js?digest=18bd87630a240e9c25be" />
 
-    <script src="../_static/documentation_options.js?v=5aae1070"></script>
+    <script src="../_static/documentation_options.js?v=fed69469"></script>
     <script src="../_static/doctools.js?v=fd6eb6e6"></script>
     <script src="../_static/sphinx_highlight.js?v=6ffebe34"></script>
     <script src="../_static/clipboard.min.js?v=a7894cd8"></script>
@@ -55,7 +55,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1"/>
   <meta name="color-scheme" content="light dark"/>
   <meta name="docsearch:language" content="en"/>
-  <meta name="docsearch:version" content="2026.10.16" />
+  <meta name="docsearch:version" content="2026.10.17" />
   
     
     <script src="../_static/searchtools.js"></script>
@@ -666,6 +666,16 @@ full path of the environment in which xnn is installed).</p>
 <dd class="field-odd"><p>(“xnn”, str)</p>
 </dd>
 </dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="xnn_step.installer.Installer.install">
+<span class="sig-name descname"><span class="pre">install</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="../_modules/xnn_step/installer.html#Installer.install"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#xnn_step.installer.Installer.install" title="Link to this definition">#</a></dt>
+<dd><p>Install, then use the GPU by default when the environment can.</p>
+<p>The <code class="docutils literal notranslate"><span class="pre">device</span></code> in a newly written <code class="docutils literal notranslate"><span class="pre">xnn.ini</span></code> is set to <code class="docutils literal notranslate"><span class="pre">cuda</span></code> when the
+environment’s torch can use an NVIDIA GPU. An existing <code class="docutils literal notranslate"><span class="pre">xnn.ini</span></code> is
+never changed: a <code class="docutils literal notranslate"><span class="pre">device</span> <span class="pre">=</span> <span class="pre">cpu</span></code> there may be deliberate, so the
+installer only says that the GPU could be used.</p>
 </dd></dl>
 
 </dd></dl>
@@ -1381,6 +1391,7 @@ A SEAMM plug-in for xnn</p>
 <li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#module-xnn_step.installer">xnn_step.installer module</a><ul class="pst-show_toc_level nav section-nav flex-column">
 <li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#xnn_step.installer.Installer"><code class="docutils literal notranslate"><span class="pre">Installer</span></code></a><ul class="nav section-nav flex-column">
 <li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#xnn_step.installer.Installer.exe_version"><code class="docutils literal notranslate"><span class="pre">Installer.exe_version()</span></code></a></li>
+<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#xnn_step.installer.Installer.install"><code class="docutils literal notranslate"><span class="pre">Installer.install()</span></code></a></li>
 </ul>
 </li>
 </ul>

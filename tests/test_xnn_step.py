@@ -771,3 +771,103 @@ def test_existing_ini_is_not_changed(tmp_path, monkeypatch, capsys):
     _installer(monkeypatch, tmp_path, True).install()
     assert _device(path) == "cpu"
     assert "set 'device = cuda'" in capsys.readouterr().out
+
+
+# --------------------------------------------------------------------------- #
+# xnn's fast paths on a GPU
+# --------------------------------------------------------------------------- #
+
+
+def test_fast_path_requirements():
+    from xnn_step import fast_paths as fp
+
+    none = {"vesin_torch": False, "cuequivariance_torch": False}
+    reqs, notes = fp.requirements({"torch": "2.14.1+cu130", "modules": none})
+    assert reqs == [
+        "vesin-torch",
+        "cuequivariance-torch>=0.7",
+        "cuequivariance-ops-torch-cu13>=0.7",
+        "torch==2.14.1+cu130",
+    ]
+    reqs, _ = fp.requirements({"torch": "2.13.0+cu129", "modules": none})
+    assert "cuequivariance-ops-torch-cu12>=0.7" in reqs
+    # CUDA 11: vesin only, and a note
+    reqs, notes = fp.requirements({"torch": "2.4.0+cu118", "modules": none})
+    assert reqs == ["vesin-torch", "torch==2.4.0+cu118"] and len(notes) == 1
+    # A CPU or Apple build: nothing
+    assert fp.requirements({"torch": "2.14.1", "modules": none}) == ([], [])
+    assert fp.requirements({"torch": None, "modules": none}) == ([], [])
+    # Everything there: nothing
+    both = {"vesin_torch": True, "cuequivariance_torch": True}
+    assert fp.requirements({"torch": "2.14.1+cu130", "modules": both}) == ([], [])
+    assert fp.parse_probe('x\nFASTPATHS {"torch": null, "modules": {}}') == {
+        "torch": None,
+        "modules": {},
+    }
+
+
+def test_fast_path_sentences():
+    from xnn_step import fast_paths as fp
+
+    text, warning = fp.describe({"vesin_torch": True, "cuequivariance_torch": True})
+    assert not warning and "uses xnn's fast paths" in text
+    text, warning = fp.describe({"vesin_torch": True, "cuequivariance_torch": False})
+    assert warning and "lacks the cuEquivariance tensor products" in text
+
+
+class _Conda:
+    def __init__(self, probe):
+        self.probe = probe
+        self.installed = []
+
+    def run_python(self, environment, script):
+        import json
+
+        return "FASTPATHS " + json.dumps(self.probe)
+
+    def pip_install(self, environment, reqs, index_args=()):
+        self.installed.append(list(reqs))
+
+
+@pytest.mark.parametrize("ours", [True, False])
+def test_installer_adds_fast_paths_only_to_its_own_cuda_environments(
+    monkeypatch, capsys, ours
+):
+    from xnn_step.installer import Installer
+
+    monkeypatch.setattr("sys.argv", ["xnn-step-installer", "show"])
+    installer = Installer()
+    conda = _Conda({"torch": "2.14.1+cu130", "modules": {"vesin_torch": False}})
+    monkeypatch.setattr(Installer, "conda", property(lambda self: conda))
+    monkeypatch.setattr(installer, "_not_ours", lambda env: not ours)
+    monkeypatch.setattr(installer, "torch_target", lambda: {"tag": None})
+    installer._ensure_fast_paths("seamm-xnn")
+    if ours:
+        assert conda.installed and conda.installed[0][-1] == "torch==2.14.1+cu130"
+    else:
+        assert conda.installed == []
+        assert "lacks" in capsys.readouterr().out
+
+
+def test_installer_leaves_a_cpu_environment_alone(monkeypatch):
+    from xnn_step.installer import Installer
+
+    monkeypatch.setattr("sys.argv", ["xnn-step-installer", "show"])
+    installer = Installer()
+    conda = _Conda({"torch": "2.14.1", "modules": {}})
+    monkeypatch.setattr(Installer, "conda", property(lambda self: conda))
+    monkeypatch.setattr(installer, "_not_ours", lambda env: False)
+    installer._ensure_fast_paths("seamm-xnn")
+    assert conda.installed == []
+
+
+def test_engine_notes_on_the_gpu_only(monkeypatch):
+    monkeypatch.setattr(XnnStep, "get_executor_config", classmethod(lambda c, e, o: {}))
+    monkeypatch.setattr(
+        XnnStep,
+        "fast_paths",
+        classmethod(lambda c, config: {"modules": {"vesin_torch": True}}),
+    )
+    assert XnnStep.engine_notes(None, {}, "cpu") == []
+    ((text, warning),) = XnnStep.engine_notes(None, {}, "cuda:0")
+    assert warning and "cuEquivariance" in text

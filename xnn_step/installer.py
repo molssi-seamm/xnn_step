@@ -15,6 +15,8 @@ import subprocess
 
 import seamm_manager
 
+from . import fast_paths
+
 logger = logging.getLogger(__name__)
 
 
@@ -57,6 +59,45 @@ class Installer(seamm_manager.InstallerBase):
 
         logger.debug(f"data directory: {self.resource_path}")
         self.environment_file = self.resource_path / "seamm-xnn.yml"
+
+    def _ensure_torch(self, environment, apply_file=True):
+        """Bring torch into line with the machine, then add xnn's fast paths for a
+        CUDA build of torch (see :mod:`xnn_step.fast_paths`)."""
+        ok = super()._ensure_torch(environment, apply_file=apply_file)
+        if ok:
+            self._ensure_fast_paths(environment)
+        return ok
+
+    def _ensure_fast_paths(self, environment):
+        """Install the fast paths an environment SEAMM manages is missing.
+
+        Only for a CUDA build of torch, and never in an environment SEAMM did not
+        create, for which the installer only says what is missing. torch is pinned
+        to the installed version, so that pip cannot change it to suit them.
+        """
+        probe = fast_paths.parse_probe(
+            self.conda.run_python(environment, fast_paths.PROBE)
+        )
+        if probe is None:
+            return
+        reqs, notes = fast_paths.requirements(probe)
+        for note in notes:
+            print(f"    {note}")
+        if not reqs:
+            if fast_paths.cuda_major(probe.get("torch")) is not None:
+                print("    " + fast_paths.describe(probe.get("modules", {}))[0])
+            return
+        if self._not_ours(environment):
+            print("!   " + fast_paths.describe(probe.get("modules", {}))[0])
+            return
+        print(f"    Installing xnn's fast paths for the GPU: {', '.join(reqs[:-1])}.")
+        try:
+            from seamm_manager import torch_support
+
+            index_args = torch_support.pip_index_args(self.torch_target())
+            self.conda.pip_install(environment, reqs, index_args=index_args)
+        except Exception as e:
+            print(f"!   Could not install the fast paths: {e}")
 
     def install(self):
         """Install, then use the GPU by default when the environment can.

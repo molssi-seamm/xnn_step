@@ -24,8 +24,10 @@ import os
 import re
 from pathlib import Path
 import shutil
+import subprocess
 
 import xnn_step
+from . import fast_paths as fast_path_support
 from .checkpoint import (
     describe_dispersion,
     dispersion_settings,
@@ -722,6 +724,72 @@ class XnnStep(object):
             argv = [f"OMP_NUM_THREADS={n}", f"MKL_NUM_THREADS={n}", *argv]
 
         return argv
+
+    #: The fast paths found in each engine environment, so each is probed once
+    _fast_paths = {}
+
+    @classmethod
+    def fast_paths(cls, config):
+        """Which of xnn's fast paths the engine's environment has.
+
+        Parameters
+        ----------
+        config : dict
+            The xnn.ini section, from :meth:`get_executor_config`.
+
+        Returns
+        -------
+        dict or None
+            ``{"modules": {module: bool}, "torch": version}``, or None if the
+            environment could not be probed.
+        """
+        installation = config.get("installation", "conda")
+        environment = config.get("conda-environment", "")
+        code = config.get("code", "xnn").split()
+        key = (installation, config.get("conda", ""), environment, code[0])
+        if key not in cls._fast_paths:
+            if installation == "conda":
+                if environment[:1] == "~" or Path(environment).is_absolute():
+                    env_args = ["-p", str(Path(environment).expanduser())]
+                else:
+                    env_args = ["-n", environment]
+                python = [config["conda"], "run", *env_args, "python"]
+            else:
+                program = shutil.which(code[0])
+                python = [
+                    str(Path(program).with_name("python")) if program else "python"
+                ]
+            try:
+                result = subprocess.run(
+                    [*python, "-c", fast_path_support.PROBE],
+                    stdin=subprocess.DEVNULL,
+                    capture_output=True,
+                    text=True,
+                    timeout=120,
+                )
+                cls._fast_paths[key] = fast_path_support.parse_probe(result.stdout)
+            except (OSError, subprocess.SubprocessError, KeyError) as e:
+                logger.debug(f"Could not probe the fast paths: {e}")
+                cls._fast_paths[key] = None
+        return cls._fast_paths[key]
+
+    @classmethod
+    def engine_notes(cls, executor, seamm_options, device):
+        """Sentences for the output about the engine, and whether each is a warning.
+
+        On a GPU, which of xnn's fast paths the engine uses: without them a large
+        system runs up to twice as slowly, and xnn says nothing.
+
+        Returns
+        -------
+        [(str, bool)]
+        """
+        if not str(device or "").startswith("cuda"):
+            return []
+        probe = cls.fast_paths(cls.get_executor_config(executor, seamm_options))
+        if probe is None:
+            return []
+        return [fast_path_support.describe(probe.get("modules", {}))]
 
     @staticmethod
     def _committee_command(

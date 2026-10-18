@@ -1,6 +1,16 @@
 =======
 History
 =======
+2026.10.17.1 -- xnn's fast paths on NVIDIA GPUs
+    * For a CUDA build of torch the installer now adds xnn's fast paths to the
+      environment: the vesin-torch neighbour lists and the cuEquivariance tensor
+      products, with the operations matching torch's CUDA. xnn uses them by itself;
+      without them a large system ran up to twice as slowly on the GPU, with the same
+      results. torch is kept as it is, and an environment SEAMM did not create is
+      left alone, with a note of what it lacks.
+    * Steps that drive the engine on a GPU, such as LAMMPS from 2026.10.17.3, say in
+      their output whether it has the fast paths, and warn when it does not.
+
 2026.10.17 -- Bugfix: committees in a standard installation, and the GPU by default
     * The ``seamm-xnn`` environment now includes ASE. A committee's engine runs in that
       environment and needs ASE for its spreads, so in a standard installation a

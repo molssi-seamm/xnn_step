@@ -7,7 +7,7 @@
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="viewport" content="width=device-width, initial-scale=1" />
 
-    <title>User Guide &#8212; SEAMM xnn Plug-in 2026.10.17 documentation</title>
+    <title>User Guide &#8212; SEAMM xnn Plug-in 2026.10.17.1 documentation</title>
   
   
   
@@ -40,7 +40,7 @@
   <link rel="preload" as="script" href="../_static/scripts/bootstrap.js?digest=18bd87630a240e9c25be" />
 <link rel="preload" as="script" href="../_static/scripts/pydata-sphinx-theme.js?digest=18bd87630a240e9c25be" />
 
-    <script src="../_static/documentation_options.js?v=fed69469"></script>
+    <script src="../_static/documentation_options.js?v=62bfd45e"></script>
     <script src="../_static/doctools.js?v=fd6eb6e6"></script>
     <script src="../_static/sphinx_highlight.js?v=6ffebe34"></script>
     <script src="../_static/clipboard.min.js?v=a7894cd8"></script>
@@ -55,7 +55,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1"/>
   <meta name="color-scheme" content="light dark"/>
   <meta name="docsearch:language" content="en"/>
-  <meta name="docsearch:version" content="2026.10.17" />
+  <meta name="docsearch:version" content="2026.10.17.1" />
   
     
     <script src="../_static/searchtools.js"></script>
@@ -518,7 +518,7 @@ that drive a model chemistry over the MolSSI Driver Interface (MDI).</p>
 <h2>xnn.ini<a class="headerlink" href="#xnn-ini" title="Link to this heading">#</a></h2>
 <p><code class="docutils literal notranslate"><span class="pre">~/SEAMM/xnn.ini</span></code> (created with defaults the first time it is needed) has a section
 per executor, normally just <code class="docutils literal notranslate"><span class="pre">[local]</span></code>:</p>
-<dl class="simple">
+<dl>
 <dt><code class="docutils literal notranslate"><span class="pre">installation</span></code></dt><dd><p><code class="docutils literal notranslate"><span class="pre">conda</span></code> (the default) or <code class="docutils literal notranslate"><span class="pre">local</span></code>.</p>
 </dd>
 <dt><code class="docutils literal notranslate"><span class="pre">conda</span></code>, <code class="docutils literal notranslate"><span class="pre">conda-environment</span></code></dt><dd><p>The conda executable and the environment holding xnn and PyTorch
@@ -534,6 +534,15 @@ says so when the GPU could be used.
 On Apple silicon <code class="docutils literal notranslate"><span class="pre">mps</span></code> works only for a float32 model and only without the
 optional <code class="docutils literal notranslate"><span class="pre">vesin-torch</span></code> neighbor-list package, which insists on float64 (Apple’s
 GPU has none); for small molecules the CPU is as fast or faster anyway.</p>
+<p>On an NVIDIA GPU xnn is much faster with its <em>fast paths</em>, optional packages it
+uses by itself when they are installed: <code class="docutils literal notranslate"><span class="pre">vesin-torch</span></code> for the neighbour lists
+and cuEquivariance (<code class="docutils literal notranslate"><span class="pre">cuequivariance-torch</span></code> with <code class="docutils literal notranslate"><span class="pre">cuequivariance-ops-torch-cu12</span></code>
+or <code class="docutils literal notranslate"><span class="pre">-cu13</span></code>, matching torch’s CUDA) for the tensor products of MACE models.
+Without them a large system runs up to twice as slowly, with the same results.
+When the environment’s torch is a CUDA build, the installer adds them to an
+environment SEAMM manages, keeping torch as it is; for one you built yourself it
+says what is missing. On a GPU, steps such as LAMMPS say in their output whether
+the engine has the fast paths, and warn when it does not.</p>
 </dd>
 <dt><code class="docutils literal notranslate"><span class="pre">models</span></code></dt><dd><p>The directories searched for checkpoints, one per line. An entry may be
 <code class="docutils literal notranslate"><span class="pre">personal:&lt;subdir&gt;</span></code> (<code class="docutils literal notranslate"><span class="pre">~/.seamm.d/data/Forcefields/&lt;subdir&gt;</span></code>),

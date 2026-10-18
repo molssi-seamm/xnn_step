@@ -12,6 +12,14 @@ xnn\_step.checkpoint module
    :show-inheritance:
    :undoc-members:
 
+xnn\_step.fast\_paths module
+----------------------------
+
+.. automodule:: xnn_step.fast_paths
+   :members:
+   :show-inheritance:
+   :undoc-members:
+
 xnn\_step.installer module
 --------------------------
 

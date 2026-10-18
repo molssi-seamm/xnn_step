@@ -7,7 +7,7 @@
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="viewport" content="width=device-width, initial-scale=1" />
 
-    <title>xnn_step package &#8212; SEAMM xnn Plug-in 2026.10.17 documentation</title>
+    <title>xnn_step package &#8212; SEAMM xnn Plug-in 2026.10.17.1 documentation</title>
   
   
   
@@ -40,7 +40,7 @@
   <link rel="preload" as="script" href="../_static/scripts/bootstrap.js?digest=18bd87630a240e9c25be" />
 <link rel="preload" as="script" href="../_static/scripts/pydata-sphinx-theme.js?digest=18bd87630a240e9c25be" />
 
-    <script src="../_static/documentation_options.js?v=fed69469"></script>
+    <script src="../_static/documentation_options.js?v=62bfd45e"></script>
     <script src="../_static/doctools.js?v=fd6eb6e6"></script>
     <script src="../_static/sphinx_highlight.js?v=6ffebe34"></script>
     <script src="../_static/clipboard.min.js?v=a7894cd8"></script>
@@ -55,7 +55,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1"/>
   <meta name="color-scheme" content="light dark"/>
   <meta name="docsearch:language" content="en"/>
-  <meta name="docsearch:version" content="2026.10.17" />
+  <meta name="docsearch:version" content="2026.10.17.1" />
   
     
     <script src="../_static/searchtools.js"></script>
@@ -621,6 +621,76 @@ time.</p>
 </dd></dl>
 
 </section>
+<section id="module-xnn_step.fast_paths">
+<span id="xnn-step-fast-paths-module"></span><h2>xnn_step.fast_paths module<a class="headerlink" href="#module-xnn_step.fast_paths" title="Link to this heading">#</a></h2>
+<p>xnn’s fast paths: optional packages that make a model much faster on an NVIDIA GPU.</p>
+<p>xnn uses them by itself when they are installed, and says nothing when they are not;
+without them a large system runs up to twice as slowly on the GPU:</p>
+<ul class="simple">
+<li><p><code class="docutils literal notranslate"><span class="pre">vesin-torch</span></code>, fast neighbour lists, and</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">cuequivariance-torch</span></code> with the operations matching torch’s CUDA,
+<code class="docutils literal notranslate"><span class="pre">cuequivariance-ops-torch-cu12</span></code> or <code class="docutils literal notranslate"><span class="pre">-cu13</span></code>, fused tensor products for MACE.</p></li>
+</ul>
+<p>vesin-torch forces float64, which Apple’s GPU (mps) does not have, so neither is part
+of seamm-xnn.yml: the installer adds them when the environment’s torch is a CUDA build.</p>
+<dl class="py data">
+<dt class="sig sig-object py" id="xnn_step.fast_paths.CUEQUIVARIANCE_MIN">
+<span class="sig-prename descclassname"><span class="pre">xnn_step.fast_paths.</span></span><span class="sig-name descname"><span class="pre">CUEQUIVARIANCE_MIN</span></span><span class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">'0.7'</span></span><a class="headerlink" href="#xnn_step.fast_paths.CUEQUIVARIANCE_MIN" title="Link to this definition">#</a></dt>
+<dd><p>The oldest cuEquivariance with operations for CUDA 13</p>
+</dd></dl>
+
+<dl class="py data">
+<dt class="sig sig-object py" id="xnn_step.fast_paths.FAST_PATHS">
+<span class="sig-prename descclassname"><span class="pre">xnn_step.fast_paths.</span></span><span class="sig-name descname"><span class="pre">FAST_PATHS</span></span><span class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">{'cuequivariance_torch':</span> <span class="pre">'the</span> <span class="pre">cuEquivariance</span> <span class="pre">tensor</span> <span class="pre">products',</span> <span class="pre">'vesin_torch':</span> <span class="pre">'the</span> <span class="pre">vesin-torch</span> <span class="pre">neighbour</span> <span class="pre">lists'}</span></span><a class="headerlink" href="#xnn_step.fast_paths.FAST_PATHS" title="Link to this definition">#</a></dt>
+<dd><p>The fast paths, by module, and what they are for the output</p>
+</dd></dl>
+
+<dl class="py data">
+<dt class="sig sig-object py" id="xnn_step.fast_paths.PROBE">
+<span class="sig-prename descclassname"><span class="pre">xnn_step.fast_paths.</span></span><span class="sig-name descname"><span class="pre">PROBE</span></span><span class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">&quot;import</span> <span class="pre">importlib.metadata</span> <span class="pre">as</span> <span class="pre">md,</span> <span class="pre">importlib.util</span> <span class="pre">as</span> <span class="pre">u,</span> <span class="pre">json\nr</span> <span class="pre">=</span> <span class="pre">{'modules':</span> <span class="pre">{m:</span> <span class="pre">u.find_spec(m)</span> <span class="pre">is</span> <span class="pre">not</span> <span class="pre">None</span> <span class="pre">for</span> <span class="pre">m</span> <span class="pre">in</span> <span class="pre">['vesin_torch',</span> <span class="pre">'cuequivariance_torch']}}\ntry:\n</span>&#160;&#160;&#160; <span class="pre">r['torch']</span> <span class="pre">=</span> <span class="pre">md.version('torch')\nexcept</span> <span class="pre">md.PackageNotFoundError:\n</span>&#160;&#160;&#160; <span class="pre">r['torch']</span> <span class="pre">=</span> <span class="pre">None\nprint('FASTPATHS</span> <span class="pre">'</span> <span class="pre">+</span> <span class="pre">json.dumps(r))\n&quot;</span></span><a class="headerlink" href="#xnn_step.fast_paths.PROBE" title="Link to this definition">#</a></dt>
+<dd><p>Prints the torch build and which fast paths import, without importing torch</p>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="xnn_step.fast_paths.cuda_major">
+<span class="sig-prename descclassname"><span class="pre">xnn_step.fast_paths.</span></span><span class="sig-name descname"><span class="pre">cuda_major</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">torch_version</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/xnn_step/fast_paths.html#cuda_major"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#xnn_step.fast_paths.cuda_major" title="Link to this definition">#</a></dt>
+<dd><p>The CUDA major version of a torch build, e.g. “13” for 2.14.1+cu130; None
+for a CPU build or one that does not say.</p>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="xnn_step.fast_paths.describe">
+<span class="sig-prename descclassname"><span class="pre">xnn_step.fast_paths.</span></span><span class="sig-name descname"><span class="pre">describe</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">modules</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/xnn_step/fast_paths.html#describe"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#xnn_step.fast_paths.describe" title="Link to this definition">#</a></dt>
+<dd><p>A sentence about the fast paths a GPU run has, and whether it is a warning.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>(str, bool)</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="xnn_step.fast_paths.parse_probe">
+<span class="sig-prename descclassname"><span class="pre">xnn_step.fast_paths.</span></span><span class="sig-name descname"><span class="pre">parse_probe</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">output</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/xnn_step/fast_paths.html#parse_probe"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#xnn_step.fast_paths.parse_probe" title="Link to this definition">#</a></dt>
+<dd><p>The probe’s dictionary from its output, or None.</p>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="xnn_step.fast_paths.requirements">
+<span class="sig-prename descclassname"><span class="pre">xnn_step.fast_paths.</span></span><span class="sig-name descname"><span class="pre">requirements</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">probe</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/xnn_step/fast_paths.html#requirements"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#xnn_step.fast_paths.requirements" title="Link to this definition">#</a></dt>
+<dd><p>What to pip install for the missing fast paths, keeping torch as it is.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Returns<span class="colon">:</span></dt>
+<dd class="field-odd"><p>The requirements, empty when nothing is to be done, and sentences for what
+cannot be installed.</p>
+</dd>
+<dt class="field-even">Return type<span class="colon">:</span></dt>
+<dd class="field-even"><p>([str], [str])</p>
+</dd>
+</dl>
+</dd></dl>
+
+</section>
 <section id="module-xnn_step.installer">
 <span id="xnn-step-installer-module"></span><h2>xnn_step.installer module<a class="headerlink" href="#module-xnn_step.installer" title="Link to this heading">#</a></h2>
 <p>Installer for the xnn plug-in.</p>
@@ -1119,6 +1189,37 @@ x, y, w, h, etc.</p></li>
 </dd></dl>
 
 <dl class="py method">
+<dt class="sig sig-object py" id="xnn_step.xnn_step.XnnStep.engine_notes">
+<span class="property"><span class="k"><span class="pre">classmethod</span></span><span class="w"> </span></span><span class="sig-name descname"><span class="pre">engine_notes</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">executor</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">seamm_options</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">device</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/xnn_step/xnn_step.html#XnnStep.engine_notes"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#xnn_step.xnn_step.XnnStep.engine_notes" title="Link to this definition">#</a></dt>
+<dd><p>Sentences for the output about the engine, and whether each is a warning.</p>
+<p>On a GPU, which of xnn’s fast paths the engine uses: without them a large
+system runs up to twice as slowly, and xnn says nothing.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>[(str, bool)]</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="xnn_step.xnn_step.XnnStep.fast_paths">
+<span class="property"><span class="k"><span class="pre">classmethod</span></span><span class="w"> </span></span><span class="sig-name descname"><span class="pre">fast_paths</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">config</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/xnn_step/xnn_step.html#XnnStep.fast_paths"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#xnn_step.xnn_step.XnnStep.fast_paths" title="Link to this definition">#</a></dt>
+<dd><p>Which of xnn’s fast paths the engine’s environment has.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>config</strong> (<em>dict</em>) – The xnn.ini section, from <a class="reference internal" href="#xnn_step.xnn_step.XnnStep.get_executor_config" title="xnn_step.xnn_step.XnnStep.get_executor_config"><code class="xref py py-meth docutils literal notranslate"><span class="pre">get_executor_config()</span></code></a>.</p>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p><code class="docutils literal notranslate"><span class="pre">{&quot;modules&quot;:</span> <span class="pre">{module:</span> <span class="pre">bool},</span> <span class="pre">&quot;torch&quot;:</span> <span class="pre">version}</span></code>, or None if the
+environment could not be probed.</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>dict or None</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
 <dt class="sig sig-object py" id="xnn_step.xnn_step.XnnStep.get_executor_config">
 <span class="property"><span class="k"><span class="pre">classmethod</span></span><span class="w"> </span></span><span class="sig-name descname"><span class="pre">get_executor_config</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">executor</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">seamm_options</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/xnn_step/xnn_step.html#XnnStep.get_executor_config"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#xnn_step.xnn_step.XnnStep.get_executor_config" title="Link to this definition">#</a></dt>
 <dd><p>Return how to launch the xnn MDI engine on this machine.</p>
@@ -1388,6 +1489,16 @@ A SEAMM plug-in for xnn</p>
 <li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#xnn_step.checkpoint.read_checkpoint_config"><code class="docutils literal notranslate"><span class="pre">read_checkpoint_config()</span></code></a></li>
 </ul>
 </li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#module-xnn_step.fast_paths">xnn_step.fast_paths module</a><ul class="pst-show_toc_level nav section-nav flex-column">
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#xnn_step.fast_paths.CUEQUIVARIANCE_MIN"><code class="docutils literal notranslate"><span class="pre">CUEQUIVARIANCE_MIN</span></code></a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#xnn_step.fast_paths.FAST_PATHS"><code class="docutils literal notranslate"><span class="pre">FAST_PATHS</span></code></a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#xnn_step.fast_paths.PROBE"><code class="docutils literal notranslate"><span class="pre">PROBE</span></code></a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#xnn_step.fast_paths.cuda_major"><code class="docutils literal notranslate"><span class="pre">cuda_major()</span></code></a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#xnn_step.fast_paths.describe"><code class="docutils literal notranslate"><span class="pre">describe()</span></code></a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#xnn_step.fast_paths.parse_probe"><code class="docutils literal notranslate"><span class="pre">parse_probe()</span></code></a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#xnn_step.fast_paths.requirements"><code class="docutils literal notranslate"><span class="pre">requirements()</span></code></a></li>
+</ul>
+</li>
 <li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#module-xnn_step.installer">xnn_step.installer module</a><ul class="pst-show_toc_level nav section-nav flex-column">
 <li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#xnn_step.installer.Installer"><code class="docutils literal notranslate"><span class="pre">Installer</span></code></a><ul class="nav section-nav flex-column">
 <li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#xnn_step.installer.Installer.exe_version"><code class="docutils literal notranslate"><span class="pre">Installer.exe_version()</span></code></a></li>
@@ -1445,6 +1556,8 @@ A SEAMM plug-in for xnn</p>
 <li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#xnn_step.xnn_step.XnnStep.create_node"><code class="docutils literal notranslate"><span class="pre">XnnStep.create_node()</span></code></a></li>
 <li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#xnn_step.xnn_step.XnnStep.create_tk_node"><code class="docutils literal notranslate"><span class="pre">XnnStep.create_tk_node()</span></code></a></li>
 <li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#xnn_step.xnn_step.XnnStep.description"><code class="docutils literal notranslate"><span class="pre">XnnStep.description()</span></code></a></li>
+<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#xnn_step.xnn_step.XnnStep.engine_notes"><code class="docutils literal notranslate"><span class="pre">XnnStep.engine_notes()</span></code></a></li>
+<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#xnn_step.xnn_step.XnnStep.fast_paths"><code class="docutils literal notranslate"><span class="pre">XnnStep.fast_paths()</span></code></a></li>
 <li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#xnn_step.xnn_step.XnnStep.get_executor_config"><code class="docutils literal notranslate"><span class="pre">XnnStep.get_executor_config()</span></code></a></li>
 <li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#xnn_step.xnn_step.XnnStep.get_mdi_engine_command"><code class="docutils literal notranslate"><span class="pre">XnnStep.get_mdi_engine_command()</span></code></a></li>
 <li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#xnn_step.xnn_step.XnnStep.get_model_chemistry_options"><code class="docutils literal notranslate"><span class="pre">XnnStep.get_model_chemistry_options()</span></code></a></li>

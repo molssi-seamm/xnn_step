@@ -31,6 +31,16 @@ per executor, normally just ``[local]``:
     On Apple silicon ``mps`` works only for a float32 model and only without the
     optional ``vesin-torch`` neighbor-list package, which insists on float64 (Apple's
     GPU has none); for small molecules the CPU is as fast or faster anyway.
+
+    On an NVIDIA GPU xnn is much faster with its *fast paths*, optional packages it
+    uses by itself when they are installed: ``vesin-torch`` for the neighbour lists
+    and cuEquivariance (``cuequivariance-torch`` with ``cuequivariance-ops-torch-cu12``
+    or ``-cu13``, matching torch's CUDA) for the tensor products of MACE models.
+    Without them a large system runs up to twice as slowly, with the same results.
+    When the environment's torch is a CUDA build, the installer adds them to an
+    environment SEAMM manages, keeping torch as it is; for one you built yourself it
+    says what is missing. On a GPU, steps such as LAMMPS say in their output whether
+    the engine has the fast paths, and warn when it does not.
 ``models``
     The directories searched for checkpoints, one per line. An entry may be
     ``personal:<subdir>`` (``~/.seamm.d/data/Forcefields/<subdir>``),

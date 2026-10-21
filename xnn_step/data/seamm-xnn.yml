@@ -39,3 +39,8 @@ dependencies:
     # this environment: it finds the molecules for the molecular pressure spread and
     # writes the flagged frames. xnns does not depend on it.
     - ase
+    # MACE models saved by the mace package (*.mace.pt, e.g. MACE-OFF) are pickled
+    # objects of its classes, so loading them needs mace-torch installed, although
+    # xnn's own checkpoints do not. It adds no torch of its own: torch>=1.12 and the
+    # same e3nn==0.4.4.
+    - mace-torch>=0.3.16

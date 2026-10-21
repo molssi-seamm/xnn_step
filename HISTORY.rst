@@ -1,6 +1,12 @@
 =======
 History
 =======
+2026.10.21 -- Bugfix: MACE models from the mace package load
+    * The seamm-xnn environment now includes mace-torch. MACE models saved by the
+      mace package (``*.mace.pt`` files, such as MACE-OFF) are pickled objects of its
+      classes, so without it they failed to load with "No module named 'mace'". xnn's
+      own checkpoints were not affected.
+
 2026.10.17.1 -- xnn's fast paths on NVIDIA GPUs
     * For a CUDA build of torch the installer now adds xnn's fast paths to the
       environment: the vesin-torch neighbour lists and the cuEquivariance tensor

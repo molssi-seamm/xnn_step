@@ -7,7 +7,7 @@
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="viewport" content="width=device-width, initial-scale=1" />
 
-    <title>User Guide &#8212; SEAMM xnn Plug-in 2026.10.17.1 documentation</title>
+    <title>User Guide &#8212; SEAMM xnn Plug-in 2026.10.21 documentation</title>
   
   
   
@@ -40,7 +40,7 @@
   <link rel="preload" as="script" href="../_static/scripts/bootstrap.js?digest=18bd87630a240e9c25be" />
 <link rel="preload" as="script" href="../_static/scripts/pydata-sphinx-theme.js?digest=18bd87630a240e9c25be" />
 
-    <script src="../_static/documentation_options.js?v=62bfd45e"></script>
+    <script src="../_static/documentation_options.js?v=3c77f071"></script>
     <script src="../_static/doctools.js?v=fd6eb6e6"></script>
     <script src="../_static/sphinx_highlight.js?v=6ffebe34"></script>
     <script src="../_static/clipboard.min.js?v=a7894cd8"></script>
@@ -55,7 +55,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1"/>
   <meta name="color-scheme" content="light dark"/>
   <meta name="docsearch:language" content="en"/>
-  <meta name="docsearch:version" content="2026.10.17.1" />
+  <meta name="docsearch:version" content="2026.10.21" />
   
     
     <script src="../_static/searchtools.js"></script>
@@ -551,9 +551,14 @@ the engine has the fast paths, and warn when it does not.</p>
 default is <code class="docutils literal notranslate"><span class="pre">personal:xnn</span></code> then <code class="docutils literal notranslate"><span class="pre">local:xnn</span></code>, a personal model shadowing a
 machine-wide one of the same name.</p>
 </dd>
-<dt><code class="docutils literal notranslate"><span class="pre">pattern</span></code></dt><dd><p>The glob for checkpoint files, <code class="docutils literal notranslate"><span class="pre">*.pt</span></code> by default.</p>
+<dt><code class="docutils literal notranslate"><span class="pre">pattern</span></code></dt><dd><p>The glob for checkpoint files, <code class="docutils literal notranslate"><span class="pre">*.pt</span></code> by default. Narrow it when a directory also
+holds other <code class="docutils literal notranslate"><span class="pre">.pt</span></code> files, e.g. <code class="docutils literal notranslate"><span class="pre">*.mace*.pt</span></code> to leave out ML-IAP models
+(<code class="docutils literal notranslate"><span class="pre">*.mliap32.pt</span></code>), which LAMMPS evaluates itself and xnn cannot load.</p>
 </dd>
 </dl>
+<p>Besides xnn’s own checkpoints, the engine loads MACE models saved by the <code class="docutils literal notranslate"><span class="pre">mace</span></code>
+package (<code class="docutils literal notranslate"><span class="pre">*.mace.pt</span></code>, such as MACE-OFF). Those are pickled objects of its classes, so
+they need <code class="docutils literal notranslate"><span class="pre">mace-torch</span></code> in the environment; the <code class="docutils literal notranslate"><span class="pre">seamm-xnn</span></code> environment has it.</p>
 <p>The <code class="docutils literal notranslate"><span class="pre">[xnn-step]</span></code> section of <code class="docutils literal notranslate"><span class="pre">seamm.ini</span></code> has one option, <code class="docutils literal notranslate"><span class="pre">ncores</span></code>: a cap on the CPU
 threads the engine may use (<code class="docutils literal notranslate"><span class="pre">OMP_NUM_THREADS</span></code>), or <code class="docutils literal notranslate"><span class="pre">available</span></code> for PyTorch’s default.</p>
 </section>

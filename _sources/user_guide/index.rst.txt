@@ -49,7 +49,13 @@ per executor, normally just ``[local]``:
     default is ``personal:xnn`` then ``local:xnn``, a personal model shadowing a
     machine-wide one of the same name.
 ``pattern``
-    The glob for checkpoint files, ``*.pt`` by default.
+    The glob for checkpoint files, ``*.pt`` by default. Narrow it when a directory also
+    holds other ``.pt`` files, e.g. ``*.mace*.pt`` to leave out ML-IAP models
+    (``*.mliap32.pt``), which LAMMPS evaluates itself and xnn cannot load.
+
+Besides xnn's own checkpoints, the engine loads MACE models saved by the ``mace``
+package (``*.mace.pt``, such as MACE-OFF). Those are pickled objects of its classes, so
+they need ``mace-torch`` in the environment; the ``seamm-xnn`` environment has it.
 
 The ``[xnn-step]`` section of ``seamm.ini`` has one option, ``ncores``: a cap on the CPU
 threads the engine may use (``OMP_NUM_THREADS``), or ``available`` for PyTorch's default.

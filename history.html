@@ -7,7 +7,7 @@
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="viewport" content="width=device-width, initial-scale=1" />
 
-    <title>History &#8212; SEAMM xnn Plug-in 2026.10.17.1 documentation</title>
+    <title>History &#8212; SEAMM xnn Plug-in 2026.10.21 documentation</title>
   
   
   
@@ -40,7 +40,7 @@
   <link rel="preload" as="script" href="_static/scripts/bootstrap.js?digest=18bd87630a240e9c25be" />
 <link rel="preload" as="script" href="_static/scripts/pydata-sphinx-theme.js?digest=18bd87630a240e9c25be" />
 
-    <script src="_static/documentation_options.js?v=62bfd45e"></script>
+    <script src="_static/documentation_options.js?v=3c77f071"></script>
     <script src="_static/doctools.js?v=fd6eb6e6"></script>
     <script src="_static/sphinx_highlight.js?v=6ffebe34"></script>
     <script src="_static/clipboard.min.js?v=a7894cd8"></script>
@@ -54,7 +54,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1"/>
   <meta name="color-scheme" content="light dark"/>
   <meta name="docsearch:language" content="en"/>
-  <meta name="docsearch:version" content="2026.10.17.1" />
+  <meta name="docsearch:version" content="2026.10.21" />
   
     
     <script src="_static/searchtools.js"></script>
@@ -511,6 +511,13 @@
   <section id="history">
 <h1>History<a class="headerlink" href="#history" title="Link to this heading">#</a></h1>
 <dl class="simple">
+<dt>2026.10.21 – Bugfix: MACE models from the mace package load</dt><dd><ul class="simple">
+<li><p>The seamm-xnn environment now includes mace-torch. MACE models saved by the
+mace package (<code class="docutils literal notranslate"><span class="pre">*.mace.pt</span></code> files, such as MACE-OFF) are pickled objects of its
+classes, so without it they failed to load with “No module named ‘mace’”. xnn’s
+own checkpoints were not affected.</p></li>
+</ul>
+</dd>
 <dt>2026.10.17.1 – xnn’s fast paths on NVIDIA GPUs</dt><dd><ul class="simple">
 <li><p>For a CUDA build of torch the installer now adds xnn’s fast paths to the
 environment: the vesin-torch neighbour lists and the cuEquivariance tensor
